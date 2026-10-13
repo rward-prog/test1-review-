@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kinematics Study Lab</title>
+<style>
+:root{
+  --ink:#16213a; --paper:#eef3f9; --grid:#d9e4f0; --blue:#2f6fed; --yellow:#ffd23f;
+  --green:#1f9d6a; --red:#d8472f; --amber:#e8a317; --muted:#56667f; --white:#fff;
+  --display:"Avenir Next","Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.5;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.top{
+  position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 16px; background:var(--ink); color:#fff;
+}
+.brand{background:none;border:0;color:#fff;font:800 1.05rem var(--display);cursor:pointer;padding:6px 4px;display:flex;align-items:center;gap:8px}
+.brand .paw{font-size:1.25rem}
+.top nav{display:flex;gap:8px}
+.tbtn{background:transparent;color:#fff;border:2px solid #fff;border-radius:10px;padding:6px 12px;font:700 .9rem var(--body);cursor:pointer}
+.tbtn:hover{background:#fff;color:var(--ink)}
+main{max-width:800px;margin:0 auto;padding:22px 16px 90px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;margin:0 0 .4em;letter-spacing:-.01em}
+h1{font-size:clamp(2.1rem,7vw,3.3rem);font-weight:800}
+.h1s{font-size:clamp(1.7rem,5vw,2.3rem);font-weight:800}
+h2{font-size:1.3rem;font-weight:800} h3{font-size:1.1rem;font-weight:800}
+.sec{margin:28px 0 12px}
+.lede{font-size:1.1rem;max-width:62ch;margin:.2em 0 1.2em}
+.hero{padding:18px 0 8px}
+.muted{color:var(--muted)} .center{text-align:center;justify-content:center}
+.card{background:var(--white);border:2px solid var(--ink);border-radius:14px;box-shadow:5px 5px 0 var(--ink);padding:18px;margin:0 0 22px}
+.card p{margin:.2em 0 .8em}
+.grid3{display:grid;gap:18px;grid-template-columns:1fr;margin-bottom:22px}
+.grid3 .card{margin:0;display:flex;flex-direction:column}
+.grid3 .card .row{margin-top:auto}
+@media(min-width:720px){.grid3{grid-template-columns:repeat(3,1fr)}}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.row.grow input{flex:1 1 220px}
+.btn{
+  font:700 1rem var(--body); color:var(--ink); background:#fff; border:2px solid var(--ink); border-radius:10px;
+  padding:10px 16px; min-height:44px; cursor:pointer; box-shadow:3px 3px 0 var(--ink); text-align:center; line-height:1.2;
+}
+.btn small{font-weight:500;color:var(--muted)}
+.btn:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.btn:active:not(:disabled){transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.primary{background:var(--yellow)}
+.btn.primary small{color:var(--ink)}
+.btn.ghost{background:transparent;box-shadow:none;border-style:dashed}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.linkbtn{background:none;border:0;color:var(--blue);font:600 .95rem var(--body);text-decoration:underline;cursor:pointer;padding:6px 0}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* running-track lanes */
+.lanes{padding:8px 16px}
+.lane{display:grid;grid-template-columns:1fr;gap:6px;padding:12px 0;border-bottom:2px dashed var(--grid)}
+.lane:last-child{border-bottom:0}
+@media(min-width:640px){.lane{grid-template-columns:230px 1fr 150px;align-items:center;gap:14px}}
+.lane-name{font-weight:700;display:flex;gap:8px;align-items:center}
+.lane-name input{width:20px;height:20px;flex:none;accent-color:var(--ink)}
+.track{position:relative;height:26px;border:2px solid var(--ink);border-radius:13px;background:repeating-linear-gradient(90deg,#fff 0 18px,#f0f5fb 18px 20px);overflow:visible}
+.track .fill{position:absolute;left:0;top:0;bottom:0;border-radius:11px 0 0 11px;transition:width .5s}
+.fill.needs{background:var(--red)} .fill.almost{background:var(--amber)} .fill.ready{background:var(--green)} .fill.new{background:#c7d2e0}
+.runner{position:absolute;top:-3px;font-size:1.05rem;transform:translateX(-8px)}
+.flag{position:absolute;right:-4px;top:-14px;font-size:1.1rem}
+.lane-status{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font:700 .78rem var(--body);padding:3px 9px;border-radius:99px;border:2px solid var(--ink);background:#fff}
+.pill.needs{background:#ffd9d2} .pill.almost{background:#ffefc2} .pill.ready{background:#c9f0dd} .pill.blind{background:var(--yellow)}
+
+/* question view */
+.qhead{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px}
+.chip{background:var(--yellow);border:2px solid var(--ink);border-radius:8px;padding:3px 10px;font-weight:800;font-size:.9rem}
+.lvl{font-size:.9rem;font-weight:700;color:var(--muted)}
+.counter{margin-left:auto;font-weight:700;font-size:.9rem;color:var(--muted)}
+.bar{height:10px;border:2px solid var(--ink);border-radius:6px;background:#fff;margin:0 0 14px;overflow:hidden}
+.bar div{height:100%;background:var(--blue)}
+.q .stem{font-size:1.18rem;line-height:1.5;margin-bottom:12px}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:6px;padding:0 8px;font-size:.8rem;font-weight:700;margin-right:6px}
+.gwrap{margin:8px 0 16px}
+.graph{width:100%;max-width:560px;height:auto;display:block;border:2px solid var(--ink);border-radius:8px;background:#fff}
+.mini{width:100%;max-width:150px;height:auto;display:block;margin-top:6px}
+.mini-wrap .mini{max-width:230px;border:2px solid var(--ink);border-radius:8px;margin:10px 0}
+table.data{border-collapse:collapse;margin:12px 0}
+table.data th,table.data td{border:2px solid var(--ink);padding:5px 16px;text-align:center}
+table.data th{background:var(--yellow)}
+.opts{display:grid;gap:10px;margin:8px 0 12px}
+.opts:has(.hasimg){grid-template-columns:repeat(2,1fr)}
+@media(min-width:620px){.opts:has(.hasimg){grid-template-columns:repeat(4,1fr)}}
+.opt{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:10px;padding:10px 12px;cursor:pointer;background:#fff}
+.opt:hover{background:#f3f7ff}
+.opt:has(input:checked){background:#e4edff;box-shadow:inset 0 0 0 2px var(--blue)}
+.opt input{position:absolute;opacity:0;width:1px;height:1px}
+.opt:has(input:focus-visible){outline:3px solid var(--blue);outline-offset:2px}
+.opt .key{flex:none;width:26px;height:26px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.85rem;background:#fff}
+.opt .optbody{flex:1;min-width:0}
+.opt.right{background:#d4f3e3;border-color:var(--green);box-shadow:inset 0 0 0 2px var(--green)}
+.opt.wrong{background:#ffdcd5;border-color:var(--red);box-shadow:inset 0 0 0 2px var(--red)}
+.numrow{display:flex;align-items:center;gap:10px;margin:8px 0 2px}
+.numrow input{font:700 1.4rem var(--body);width:15ch;max-width:50%;padding:8px 12px;border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink)}
+.unit{font-weight:800;font-size:1.15rem}
+.note{font-size:.9rem;color:var(--muted);margin:2px 0 10px}
+.err{color:var(--red);font-weight:700}
+input[type=text]{font:600 1rem var(--body);padding:10px 12px;border:2px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);min-width:0}
+.hints{display:grid;gap:8px;margin:6px 0 12px}
+.hint{background:#fff8d6;border:2px solid var(--ink);border-radius:10px;padding:8px 12px;font-size:.98rem}
+.actions{margin-top:12px}
+.conf{background:#f3f7ff;border:2px solid var(--ink);border-radius:12px;padding:12px 14px;margin-top:12px}
+.conf p{margin:0 0 8px}
+.fb{border:2px solid var(--ink);border-radius:12px;padding:12px 14px;margin-top:14px}
+.fb.good{background:#d4f3e3} .fb.bad{background:#ffe9e4} .fb.show{background:#e4edff}
+.fb p{margin:0 0 6px}
+.steps ol{margin:6px 0 0;padding-left:1.3em} .steps li{margin:3px 0}
+.levelmsg{margin-top:10px;font-weight:800;background:var(--yellow);border:2px solid var(--ink);border-radius:10px;padding:8px 12px}
+
+.codebox .code{font:800 clamp(1rem,4.5vw,1.45rem) ui-monospace,Menlo,Consolas,monospace;background:var(--paper);border:2px dashed var(--ink);border-radius:10px;padding:12px;margin:10px 0;text-align:center;word-break:break-all;user-select:all}
+.loadbox .msg{min-height:0;color:var(--red);font-weight:700;margin:4px 0 0}
+.note.card,.card.note{background:#fff8d6}
+
+/* calculator */
+#calc{position:fixed;right:14px;bottom:14px;width:min(270px,calc(100vw - 28px));z-index:30;background:var(--ink);color:#fff;border-radius:16px;padding:12px;box-shadow:5px 5px 0 rgba(22,33,58,.35);border:2px solid #fff}
+#calc[hidden]{display:none}
+.calc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.calc-x{background:none;border:0;color:#fff;font-size:1.5rem;cursor:pointer;line-height:1;padding:0 6px}
+.calc-expr{min-height:1.2em;text-align:right;color:#aab8d0;font-size:.85rem}
+.calc-disp{font:700 2rem ui-monospace,Menlo,Consolas,monospace;text-align:right;background:#0f1830;border-radius:8px;padding:6px 10px;margin-bottom:10px;overflow:hidden;white-space:nowrap}
+.calc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.ck{font:700 1.25rem var(--body);padding:11px 0;border-radius:10px;border:0;background:#2a3a5e;color:#fff;cursor:pointer}
+.ck:hover{background:#3a4d78} .ck.op{background:var(--blue)} .ck.eq{background:var(--yellow);color:var(--ink)} .ck.zero{grid-column:span 2}
+.ck.zero{grid-column:span 2}
+
+#toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,30px);opacity:0;background:var(--ink);color:#fff;padding:10px 18px;border-radius:99px;font-weight:700;z-index:50;pointer-events:none;transition:opacity .2s,transform .2s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* leave room so the calculator never covers the question */
+body.calc-open main{padding-bottom:400px}
+@media(min-width:1100px){body.calc-open main{padding-bottom:90px}}
+
+.kindtag{background:#fff;border:2px solid var(--ink);border-radius:8px;padding:2px 9px;font-weight:700;font-size:.85rem}
+.kindfilter{background:#fff8d6;padding:12px 16px}.kindfilter .row{margin:6px 0 0}.kchk{display:flex;gap:8px;align-items:center;font-weight:600;cursor:pointer}.kchk input{width:20px;height:20px;accent-color:var(--ink)}
+
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="brand" id="brand" aria-label="Kinematics Study Lab home"><span class="paw" aria-hidden="true">&#128062;</span>Kinematics Study Lab</button>
+  <nav aria-label="Tools">
+    <button class="tbtn" id="progbtn">My progress</button>
+    <button class="tbtn" id="calcbtn" aria-expanded="false" aria-controls="calc">Calculator</button>
+  </nav>
+</header>
+<main id="app"></main>
+<div id="calc" role="dialog" aria-label="Calculator" hidden></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* ======================================================================
+   Kinematics Study Lab — question bank
+   Every question is generated from a template with fresh numbers/names.
+   Numeric answers are always whole numbers or .5.
+   NONE of these templates reuse a question from the Unit 1 Test.
+   ====================================================================== */
+
+const STUDENTS = ["Alex Brooks","David Adams","James Murray","Cyrus Ahmed","Reid Galluzzo","Peter Lee",
+"Dilan Martiradonna","Stanley Ma","John Frankle","Quentin Mollenkamp","Reid DeMasi","Alec Cattie-Watt",
+"Ben Evans","Cam David","Dean Carlson","Alex Bersh","Rafay Kharal","Viaan Ramnath",
+"Julien Berg","Jeeva Kaushik","Max Fernaine","Chad Valerio","Ammar Qaiser","Matthew Schwartz",
+"Jamie Greene","Preston Zarnegar","Dylan Metovic","Dean Haines","Henry Yoon","Masen Caver",
+"Bode Simpson","Alden Skelton","William Flax","Luke Seith","Luke LaValle","William Oppold",
+"Luke Strang","Saahil Kapur","Kamran Alizadeh","Andy Heffernan","Oliver Achecar","Joshua Yi",
+"Sidney Were","Immanuel Hanna","Ari Kyriacou","Zaki Arfin","Aditya Singh","Sam Hines-Mudry",
+"Eric Rodas Chacon","Drew Campelli","Lawrence Zhang"];
+const STAFF = ["Mr. Ward","Murphy","Mr. Divan","Mr. Adorno","Ms. Pabon"];
+
+const TOPICS = [
+  {id:1, name:'Position & reference points', short:'Position'},
+  {id:2, name:'Distance & displacement', short:'Distance/Displacement'},
+  {id:3, name:'Scalars & vectors', short:'Scalars/Vectors'},
+  {id:4, name:'Speed & velocity math', short:'Speed math'},
+  {id:5, name:'Average speed vs. average velocity', short:'Avg speed/velocity'},
+  {id:6, name:'Position-time graphs', short:'Position graphs'},
+  {id:7, name:'Velocity-time graphs', short:'Velocity graphs'},
+  {id:8, name:'Acceleration math', short:'Acceleration math'},
+  {id:9, name:'Acceleration ideas', short:'Acceleration ideas'},
+  {id:10, name:'Graph matching', short:'Graph matching'}
+];
+
+/* ---------- helpers ---------- */
+const R = (a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick = a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+const isHalf = x => Math.abs(x*2-Math.round(x*2))<1e-9;
+const isInt = x => Math.abs(x-Math.round(x))<1e-9;
+function fmt(n){ n=Math.round(n*100)/100; return String(n).replace('-','\u2212'); }
+function sgn(n){ return n>0 ? '+'+fmt(n) : fmt(n); }
+const DIRS = ['north','south','east','west'];
+
+let _used = [];
+function resetNames(){ _used = []; }
+function name(){
+  let n, first, guard=0;
+  do {
+    n = Math.random()<0.2 ? pick(STAFF) : pick(STUDENTS);
+    first = n.split(' ')[0]; if(n.startsWith('Mr.')||n.startsWith('Ms.')) first = n;
+    guard++;
+  } while(_used.includes(first) && guard<200);
+  _used.push(first); return first;
+}
+
+/* MC builder: items may be strings or {t, svg} */
+function mc(base, correct, wrongs){
+  const norm = x => typeof x==='string' ? {t:x} : x;
+  const items = [Object.assign(norm(correct),{ok:true})].concat(wrongs.map(w=>Object.assign(norm(w),{ok:false})));
+  const sh = shuffle(items);
+  return Object.assign({type:'mc', choices: sh.map(x=>({t:x.t||'', svg:x.svg||null})), correct: sh.findIndex(x=>x.ok)}, base);
+}
+function num(base, answer, unit){ return Object.assign({type:'num', answer, unit:unit||''}, base); }
+
+/* ---------- graph drawing ---------- */
+const INK='#16213a', BLUE='#2f6fed', ORANGE='#e8751a', GRID='#d5e0ec';
+function graphSVG(o){
+  const W=o.w||560, H=o.h||300, ml=54, mr=18, mt=14, mb=44;
+  const pw=W-ml-mr, ph=H-mt-mb, xmax=o.xmax, ymin=o.ymin, ymax=o.ymax;
+  const X=x=>ml+x/xmax*pw, Y=y=>mt+(ymax-y)/(ymax-ymin)*ph;
+  const xl = xmax>10?2:1, yl = (ymax-ymin)>10?2:1;
+  let s=`<svg class="graph" viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.alt||'graph'}" xmlns="http://www.w3.org/2000/svg">`;
+  s+=`<rect x="${ml}" y="${mt}" width="${pw}" height="${ph}" fill="#fff"/>`;
+  for(let x=0;x<=xmax;x++) s+=`<line x1="${X(x)}" y1="${mt}" x2="${X(x)}" y2="${mt+ph}" stroke="${GRID}" stroke-width="1"/>`;
+  for(let y=Math.ceil(ymin);y<=ymax;y++) s+=`<line x1="${ml}" y1="${Y(y)}" x2="${ml+pw}" y2="${Y(y)}" stroke="${GRID}" stroke-width="1"/>`;
+  if(ymin<0 && ymax>0) s+=`<line x1="${ml}" y1="${Y(0)}" x2="${ml+pw}" y2="${Y(0)}" stroke="${INK}" stroke-width="2"/>`;
+  s+=`<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt+ph}" stroke="${INK}" stroke-width="2.5"/>`;
+  s+=`<line x1="${ml}" y1="${Y(ymin)}" x2="${ml+pw}" y2="${Y(ymin)}" stroke="${INK}" stroke-width="2.5"/>`;
+  for(let x=0;x<=xmax;x+=xl) s+=`<text x="${X(x)}" y="${mt+ph+16}" text-anchor="middle" font-size="12" fill="${INK}">${x}</text>`;
+  for(let y=Math.ceil(ymin);y<=ymax;y++) if(y%yl===0) s+=`<text x="${ml-7}" y="${Y(y)+4}" text-anchor="end" font-size="12" fill="${INK}">${fmt(y)}</text>`;
+  s+=`<text x="${ml+pw/2}" y="${H-6}" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">Time (s)</text>`;
+  s+=`<text transform="translate(13 ${mt+ph/2}) rotate(-90)" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">${o.ylabel}</text>`;
+  (o.lines||[]).forEach(L=>{
+    const pts=L.pts.map(p=>`${X(p[0])},${Y(p[1])}`).join(' ');
+    s+=`<polyline points="${pts}" fill="none" stroke="${L.color||BLUE}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`;
+    if(L.dots) L.pts.forEach(p=>{ s+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4.5" fill="${L.color||BLUE}"/>`; });
+    if(L.label){ const e=L.pts[L.pts.length-1]; s+=`<text x="${X(e[0])-6}" y="${Y(e[1])-9}" text-anchor="end" font-size="14" font-weight="800" fill="${L.color||BLUE}">${L.label}</text>`; }
+  });
+  return s+'</svg>';
+}
+function ptGraph(g, alt){
+  const ys=g.pts.map(p=>p[1]); const mn=Math.min(...ys), mx=Math.max(...ys);
+  return graphSVG({xmax:g.T, ymin: mn<0? Math.floor(mn)-1 : 0, ymax: Math.max(1,Math.ceil(mx)+1), ylabel:'Position (m)', alt:alt||'position-time graph', lines:[{pts:g.pts, dots:true}]});
+}
+function vtGraph(g, alt){
+  const ys=g.pts.map(p=>p[1]); const mn=Math.min(...ys), mx=Math.max(...ys);
+  return graphSVG({xmax:g.T, ymin: mn<0? Math.floor(mn)-1 : -2, ymax: mx>0? Math.ceil(mx)+1 : 2, ylabel:'Velocity (m/s)', alt:alt||'velocity-time graph', lines:[{pts:g.pts, dots:true}]});
+}
+/* small sketch graphs (no numbers) for matching questions */
+function miniSVG(pts, o){
+  o=o||{}; const W=o.w||140, H=o.h||108, L=16, T=10, B=8, Rr=10;
+  const X=x=>L+x*(W-L-Rr), Y=y=>T+(1-(y+1)/2)*(H-T-B);
+  let s=`<svg class="mini" viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.alt||'sketch graph'}" xmlns="http://www.w3.org/2000/svg">`;
+  s+=`<rect x="${L}" y="${T}" width="${W-L-Rr}" height="${H-T-B}" fill="#fff" stroke="${GRID}"/>`;
+  s+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="${INK}" stroke-width="2"/>`;
+  s+=`<line x1="${L}" y1="${Y(0)}" x2="${W-Rr}" y2="${Y(0)}" stroke="${INK}" stroke-width="2"/>`;
+  s+=`<text x="${L-4}" y="${T+9}" text-anchor="end" font-size="11" font-weight="700" fill="${INK}">+</text>`;
+  s+=`<text x="${L-4}" y="${H-B}" text-anchor="end" font-size="11" font-weight="700" fill="${INK}">\u2212</text>`;
+  s+=`<text x="${W-Rr}" y="${Y(0)+13}" text-anchor="end" font-size="10" fill="${INK}">time</text>`;
+  s+=`<polyline points="${pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')}" fill="none" stroke="${BLUE}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  return s+'</svg>';
+}
+const curve = f => { const a=[]; for(let i=0;i<=10;i++){ const t=i/10; a.push([t,f(t)]);} return a; };
+
+/* ---------- registry ---------- */
+const G = {};
+function reg(t,diff,id,fn){ (G[t]=G[t]||[]).push({t,diff,id,fn}); }
+
+/* =====================  TOPIC 1: POSITION & REFERENCE POINTS  ===================== */
+const OBJS=['locker','water fountain','bench','trash can','bike rack','vending machine'];
+const PLACES=['gym doors','front office','cafeteria door','library desk','flagpole','main entrance'];
+
+reg(1,1,'ref-which',()=>{
+  const N=name(), obj=pick(OBJS), place=pick(PLACES), d=R(3,25), dir=pick(DIRS);
+  return mc({
+    stem:`${N} says the ${obj} is ${d} m ${dir} of the ${place}. In that description, what is the <b>reference point</b>?`,
+    hints:['A reference point is the starting spot you measure <i>from</i>.','Look for the place the distance and direction are measured from. It usually comes after the word "of."',`The words "${d} m ${dir} <i>of the ${place}</i>" tell you what the distance is measured from.`],
+    steps:[`The distance (${d} m) and direction (${dir}) are measured <i>from</i> the ${place}.`,`So the reference point is <b>the ${place}</b>.`]
+  }, `the ${place}`, [`the ${obj}`, `${d} m`, dir]);
+});
+reg(1,1,'ref-complete',()=>{
+  const N=name(), obj=pick(OBJS), place=pick(PLACES), d=R(3,25), dir=pick(DIRS);
+  return mc({
+    stem:`${N} says, "Meet me at the ${obj}!" Which description tells you <i>exactly</i> where the ${obj} is?`,
+    hints:['A complete position needs three things.','The three things are a distance, a direction, and a reference point.',`Look for the choice with a number, a direction, and a place to measure from.`],
+    steps:['A full position description needs a <b>distance</b>, a <b>direction</b>, and a <b>reference point</b>.',`Only "${d} m ${dir} of the ${place}" has all three.`]
+  }, `${d} m ${dir} of the ${place}`, [`${d} m`, `${dir} of the ${place}`, `${d} m/s ${dir}`]);
+});
+reg(1,2,'ref-walk',()=>{
+  const N=name(), s=pick([-8,-6,-5,-4,-3,-2,2,3,4,5,6,7,8]), dir=pick(['east','west']), b=R(3,12);
+  const ans = s + (dir==='east'? b : -b);
+  return num({
+    stem:`The front door of the school is the reference point (0 m). East is positive and west is negative. ${N} is at ${sgn(s)} m, then walks ${b} m ${dir}. What is ${N}'s new position?`,
+    hints:['Start at the first position on a number line.','Walking east adds to the position. Walking west subtracts.',`Compute ${fmt(s)} ${dir==='east'?'+':'\u2212'} ${b}.`],
+    steps:[`Start: ${sgn(s)} m.`,`Walking ${dir} ${dir==='east'?'adds':'subtracts'} ${b} m.`,`${fmt(s)} ${dir==='east'?'+':'\u2212'} ${b} = <b>${fmt(ans)} m</b>.`]
+  }, ans, 'm');
+});
+reg(1,2,'ref-negpos',()=>{
+  const N=name(), place=pick(PLACES), a=R(2,15);
+  return mc({
+    stem:`The ${place} is the reference point. East is positive. ${N}'s position is \u2212${a} m. Where is ${N}?`,
+    hints:['A negative position means the opposite side of the reference point from the positive direction.','East is positive, so negative means the other way.',`Negative = west of the ${place}.`],
+    steps:['East is the positive direction, so a <b>negative</b> position is on the <b>west</b> side.',`${N} is <b>${a} m west of the ${place}</b>.`]
+  }, `${a} m west of the ${place}`, [`${a} m east of the ${place}`, `${a} m north of the ${place}`, `${a} m/s west`]);
+});
+reg(1,3,'ref-apart',()=>{
+  const A=name(), B=name(), a=R(3,12), b=R(2,10);
+  return num({
+    stem:`In a straight hallway the water fountain is the reference point (0 m) and east is positive. ${A}'s locker is at +${a} m. ${B}'s locker is at \u2212${b} m. How far apart are the two lockers?`,
+    hints:['Picture a number line with both lockers on it.','The lockers are on opposite sides of 0.',`Add the two distances from 0: ${a} + ${b}.`],
+    steps:[`${A}'s locker is ${a} m east of 0 and ${B}'s is ${b} m west of 0.`,`They are on opposite sides, so add: ${a} + ${b} = <b>${a+b} m</b>.`]
+  }, a+b, 'm');
+});
+reg(1,3,'ref-shift',()=>{
+  const N=name(), p=R(5,12), q=R(2,p+3);
+  const ans=p-q;
+  return num({
+    stem:`Using the flagpole as the reference point (east is positive), ${N} is at +${p} m. The bike rack is ${q} m east of the flagpole. What is ${N}'s position if the <b>bike rack</b> is used as the reference point instead?`,
+    hints:['Moving the zero point changes every position.','The new zero is the bike rack, which is east of the flagpole.',`Subtract the bike rack's position from ${N}'s: ${p} \u2212 ${q}.`],
+    steps:[`The bike rack is at +${q} m, ${N} is at +${p} m.`,`New position = ${p} \u2212 ${q} = <b>${fmt(ans)} m</b> (${ans>0?'east':'west'} of the bike rack${ans===0?', right on it':''}).`]
+  }, ans, 'm');
+});
+
+/* =====================  TOPIC 2: DISTANCE & DISPLACEMENT  ===================== */
+reg(2,1,'dd-dist2',()=>{
+  const N=name(), a=R(4,15), b=R(2,a-1);
+  return num({
+    stem:`${N} walks ${a} m east and then ${b} m west. What total <b>distance</b> did ${N} walk?`,
+    hints:['Distance is the whole length of the path.','Distance never subtracts. It counts every step.',`Add ${a} and ${b}.`],
+    steps:['Distance = total path length.',`${a} + ${b} = <b>${a+b} m</b>.`]
+  }, a+b, 'm');
+});
+reg(2,1,'dd-disp2',()=>{
+  const N=name(), a=R(3,15), b=R(2,15);
+  const ans=a-b;
+  return num({
+    stem:`East is positive. ${N} walks ${a} m east and then ${b} m west. What is ${N}'s <b>displacement</b>?`,
+    hints:['Displacement is final position minus starting position.','East is +, west is \u2212, so the legs are +'+a+' and \u2212'+b+'.',`Add them with their signs: ${a} + (\u2212${b}).`],
+    steps:['Displacement = (final position) \u2212 (start position). Use signs for direction.',`${a} + (\u2212${b}) = <b>${fmt(ans)} m</b>${ans<0?' (that means west of the start)':''}.`]
+  }, ans, 'm');
+});
+reg(2,2,'dd-legs',()=>{
+  const N=name(), a=R(4,12), b=R(2,10), c=R(1,8);
+  const ask=pick(['distance','displacement']);
+  const ans = ask==='distance'? a+b+c : a-b+c;
+  return num({
+    stem:`East is positive. ${N} walks ${a} m east, ${b} m west, and then ${c} m east. What is ${N}'s total <b>${ask}</b>?`,
+    hints:[ask==='distance'?'Distance counts every leg as a positive length.':'Displacement uses signs: east is + and west is \u2212.',ask==='distance'?'Add all three lengths.':`Write the legs as +${a}, \u2212${b}, +${c}.`,ask==='distance'?`${a} + ${b} + ${c}`:`${a} \u2212 ${b} + ${c}`],
+    steps: ask==='distance' ? [`Distance adds every leg: ${a} + ${b} + ${c} = <b>${ans} m</b>.`] : [`Displacement uses signs: (+${a}) + (\u2212${b}) + (+${c}).`,`= <b>${fmt(ans)} m</b>.`]
+  }, ans, 'm');
+});
+reg(2,2,'dd-always',()=>{
+  return mc({
+    stem:'Which statement is <b>always</b> true?',
+    hints:['Think about a walk that doubles back.','If you walk 10 m east and 10 m west, what are the distance and the displacement?','Distance (20 m) is bigger than the size of displacement (0 m) there. Which statement allows that?'],
+    steps:['Distance adds up the whole path, so it can only be as big as, or bigger than, the straight-line change in position.','So the <b>distance is always greater than or equal to the size of the displacement</b>.']
+  }, 'The distance is always greater than or equal to the size of the displacement.',
+  ['The displacement is always greater than the distance.','Distance can be negative.','Distance and displacement are always equal.']);
+});
+reg(2,3,'dd-laps',()=>{
+  const N=name(), L=pick([100,200,400]), n=R(1,4), ask=pick(['distance','displacement']);
+  const ans = ask==='distance' ? n*L : 0;
+  return num({
+    stem:`${N} jogs ${n} complete lap${n>1?'s':''} around a ${L} m track and finishes exactly where ${N} started. What is ${N}'s <b>${ask}</b>?`,
+    hints:[ask==='distance'?'Distance counts the whole path.':'Displacement only cares about start and finish.',ask==='distance'?'Multiply the laps by the length of one lap.':'Where did the jog start? Where did it end?',ask==='distance'?`${n} \u00d7 ${L}`:'Same start and finish means the position did not change.'],
+    steps: ask==='distance' ? [`${n} lap${n>1?'s':''} \u00d7 ${L} m = <b>${n*L} m</b>.`] : ['The start and finish are the same spot.','Change in position = <b>0 m</b>.']
+  }, ans, 'm');
+});
+reg(2,3,'dd-tri',()=>{
+  const N=name(), t=pick([[3,4,5],[6,8,10],[5,12,13],[9,12,15]]);
+  const [a,b,c]=shuffle([0,1])[0]?[t[0],t[1],t[2]]:[t[1],t[0],t[2]];
+  return num({
+    stem:`<span class="tag">Challenge</span> ${N} walks ${a} m east and then ${b} m north. What is the size of ${N}'s <b>displacement</b> (the straight-line distance from start to finish)?`,
+    hints:['Sketch the path. East then north makes a right angle.','The displacement is the long side (hypotenuse) of a right triangle.',`c\u00b2 = ${a}\u00b2 + ${b}\u00b2`],
+    steps:[`The path forms a right triangle with legs ${a} and ${b}.`,`c\u00b2 = ${a}\u00b2 + ${b}\u00b2 = ${a*a+b*b}`,`c = <b>${c} m</b> (distance walked was ${a+b} m).`]
+  }, c, 'm');
+});
+
+/* =====================  TOPIC 3: SCALARS & VECTORS  ===================== */
+const VECS=['displacement','velocity','acceleration'];
+const SCALS=['distance','speed','time','mass','temperature'];
+reg(3,1,'sv-which',()=>{
+  const wantVec = Math.random()<0.5;
+  for(let i=0;i<50;i++){
+    if(wantVec){
+      const v=pick(VECS), s=shuffle(SCALS).slice(0,3);
+      if(v==='displacement' && ['distance','mass','speed'].every(x=>s.includes(x))) continue;
+      return mc({stem:'Which of these is a <b>vector</b> quantity?',
+        hints:['A vector needs both a size and a direction.','Which one would you describe with a direction, like "north"?',`Scalars: distance, speed, time, mass, temperature. Vectors: displacement, velocity, acceleration.`],
+        steps:['Vectors have <b>size and direction</b>.',`<b>${v}</b> is a vector. The others are scalars (size only).`]}, v, s);
+    } else {
+      const sc=pick(SCALS);
+      return mc({stem:'Which of these is a <b>scalar</b> quantity?',
+        hints:['A scalar has a size but no direction.','Which one would never need the word "north" or "left"?','Vectors: displacement, velocity, acceleration. Everything else here is a scalar.'],
+        steps:['Scalars have <b>size only</b>.',`<b>${sc}</b> is a scalar. The others are vectors (they need a direction).`]}, sc, VECS.slice());
+    }
+  }
+});
+reg(3,1,'sv-meas',()=>{
+  const n=R(2,40), dir=pick(DIRS);
+  return mc({stem:'Which measurement is a <b>vector</b>?',
+    hints:['Look for the one that includes a direction.','A vector measurement has a number, a unit, and a direction.',`"${n} m ${dir}" has a direction attached.`],
+    steps:['A vector must include a direction.',`<b>${n} m ${dir}</b> is the only measurement with a direction.`]},
+    `${n} m ${dir}`, [`${n} m`, `${n} s`, `${n} kg`]);
+});
+reg(3,2,'sv-vel',()=>{
+  const n=R(2,30), dir=pick(DIRS);
+  return mc({stem:'Which of these is a <b>velocity</b>?',
+    hints:['Velocity is speed <i>with</i> a direction.','Check the unit (m/s) and look for a direction.',`"${n} m/s" alone is only a speed.`],
+    steps:['Velocity = speed + direction.',`<b>${n} m/s ${dir}</b> has both. "${n} m/s" alone is just speed.`]},
+    `${n} m/s ${dir}`, [`${n} m/s`, `${n} m ${dir}`, `${n} m/s\u00b2 ${dir}`]);
+});
+reg(3,2,'sv-speedo',()=>{
+  const N=name(), v=R(20,90);
+  const isSpeed = Math.random()<0.5;
+  const stem = isSpeed ? `${N}'s car speedometer reads ${v} km/h. What kind of quantity is that reading?`
+                       : `A GPS tells ${N}'s family they are driving ${v} km/h <b>north</b>. What kind of quantity is that?`;
+  const rightT = isSpeed ? 'Speed (a scalar)' : 'Velocity (a vector)';
+  const wrong = isSpeed ? ['Velocity (a vector)','Displacement (a vector)','Acceleration (a vector)'] : ['Speed (a scalar)','Distance (a scalar)','Displacement (a vector)'];
+  return mc({stem,
+    hints:['Does the measurement include a direction?', isSpeed?'The speedometer only shows how fast.':'The GPS names a direction.', isSpeed?'No direction, so it is a scalar.':'Speed + direction = velocity.'],
+    steps:[isSpeed?'Only a size (how fast) is given. No direction.':'Both a size and the direction (north) are given.',`It is <b>${rightT}</b>.`]}, rightT, wrong);
+});
+reg(3,2,'sv-pair',()=>{
+  return mc({stem:'Which pair contains <b>only scalar</b> quantities?',
+    hints:['Check each pair. Both quantities must lack a direction.','Cross out any pair with displacement, velocity, or acceleration.','Distance and speed are both scalars.'],
+    steps:['Scalars: distance, speed, time, mass.','Vectors: displacement, velocity, acceleration.','Only <b>distance and speed</b> are both scalars.']},
+    'distance and speed', ['displacement and speed','velocity and time','distance and acceleration']);
+});
+reg(3,3,'sv-same',()=>{
+  const A=name(), B=name(), v=R(3,9);
+  return mc({stem:`${A} runs ${v} m/s north and ${B} runs ${v} m/s south. Which statement is true?`,
+    hints:['Speed ignores direction. Velocity includes it.','Compare the speeds first, then compare the velocities.','The sizes match but the directions are opposite.'],
+    steps:[`Speeds: both are ${v} m/s, so they are equal.`,'Velocities include direction. North and south are opposite, so the velocities are <b>different</b>.']},
+    'They have the same speed but different velocities.',
+    ['They have the same velocity but different speeds.','They have the same speed and the same velocity.','They have different speeds and different velocities.']);
+});
+
+/* =====================  TOPIC 4: SPEED & VELOCITY MATH  ===================== */
+function pickVT(){
+  for(;;){ const v=pick([1.5,2,2.5,3,3.5,4,5,6,8]); const t=R(2,10); const d=v*t; if(isInt(d)) return {v,t,d}; }
+}
+reg(4,1,'sv-findv',()=>{
+  const N=name(), {v,t,d}=pickVT(), act=pick(['rides a skateboard','jogs','pushes a cart','rolls a ball']);
+  return num({stem:`${N} ${act} ${d} m in ${t} s at a steady pace. What is the average speed?`,
+    hints:['Speed tells you how far per second.','Use speed = distance \u00f7 time.',`${d} \u00f7 ${t}`],
+    steps:['speed = distance \u00f7 time',`= ${d} m \u00f7 ${t} s = <b>${fmt(v)} m/s</b>`]}, v, 'm/s');
+});
+reg(4,1,'sv-findd',()=>{
+  const N=name(), {v,t,d}=pickVT();
+  return num({stem:`${N} walks at a steady ${fmt(v)} m/s for ${t} s. How far does ${N} go?`,
+    hints:['You know the speed and the time. You want distance.','Rearrange: distance = speed \u00d7 time.',`${fmt(v)} \u00d7 ${t}`],
+    steps:['distance = speed \u00d7 time',`= ${fmt(v)} m/s \u00d7 ${t} s = <b>${fmt(d)} m</b>`]}, d, 'm');
+});
+reg(4,2,'sv-findt',()=>{
+  const N=name(), {v,t,d}=pickVT();
+  return num({stem:`${N} runs ${d} m at a steady ${fmt(v)} m/s. How long does the run take?`,
+    hints:['You want time this time.','Rearrange: time = distance \u00f7 speed.',`${d} \u00f7 ${fmt(v)}`],
+    steps:['time = distance \u00f7 speed',`= ${d} m \u00f7 ${fmt(v)} m/s = <b>${fmt(t)} s</b>`]}, t, 's');
+});
+reg(4,2,'sv-minutes',()=>{
+  const N=name(), v=R(2,6), m=R(1,3), d=v*60*m;
+  return num({stem:`${N} bikes at a constant ${v} m/s for ${m} minute${m>1?'s':''}. How many meters does ${N} travel?`,
+    hints:['Check the units. Speed is in m/s but time is in minutes.','Change minutes to seconds first (1 minute = 60 s).',`${m} min = ${m*60} s, then multiply by ${v}.`],
+    steps:[`Convert: ${m} min \u00d7 60 = ${m*60} s.`,`distance = ${v} m/s \u00d7 ${m*60} s = <b>${d} m</b>`]}, d, 'm');
+});
+reg(4,3,'sv-signed',()=>{
+  const N=name(), {v,t,d}=pickVT(), west=Math.random()<0.5;
+  const ans = west? -v : v;
+  return num({stem:`Taking east as positive, ${N} runs ${d} m ${west?'west':'east'} in ${t} s. What is ${N}'s average <b>velocity</b>?`,
+    hints:['Velocity is speed with a direction.',`East is +, west is \u2212. ${N} ran ${west?'west':'east'}.`,`${d} \u00f7 ${t}, then decide the sign.`],
+    steps:[`Speed = ${d} \u00f7 ${t} = ${fmt(v)} m/s.`,`Direction is ${west?'west, so the velocity is negative':'east, so the velocity is positive'}: <b>${fmt(ans)} m/s</b>`]}, ans, 'm/s');
+});
+reg(4,3,'sv-kmh',()=>{
+  for(;;){
+    const t=pick([0.5,1.5,2,2.5,3]), s=pick([40,50,60,80,90,100]); const d=s*t; if(!isInt(d)) continue;
+    return num({stem:`A bus travels ${d} km in ${fmt(t)} h. What is its average speed in km/h?`,
+      hints:['The units are already kilometers and hours. No conversion is needed.','speed = distance \u00f7 time',`${d} \u00f7 ${fmt(t)}`],
+      steps:['speed = distance \u00f7 time',`= ${d} km \u00f7 ${fmt(t)} h = <b>${s} km/h</b>`]}, s, 'km/h');
+  }
+});
+reg(4,3,'sv-twopart',()=>{
+  const N=name(); const v1=R(1,5), v2=R(1,5), t1=R(2,8), t2=R(2,8), a=v1*t1, b=v2*t2;
+  return num({stem:`${N} walks ${a} m at ${v1} m/s, then walks ${b} m at ${v2} m/s. What is the <b>total time</b> for the whole walk?`,
+    hints:['Find the time for each part separately.','time = distance \u00f7 speed for each part, then add them.',`${a} \u00f7 ${v1} and ${b} \u00f7 ${v2}`],
+    steps:[`Part 1: ${a} \u00f7 ${v1} = ${t1} s.`,`Part 2: ${b} \u00f7 ${v2} = ${t2} s.`,`Total = ${t1} + ${t2} = <b>${t1+t2} s</b>`]}, t1+t2, 's');
+});
+
+/* =====================  TOPIC 5: AVG SPEED vs AVG VELOCITY  ===================== */
+reg(5,1,'av-round-speed',()=>{
+  for(;;){
+    const N=name(), s=pick([1,1.5,2,2.5,3,4]), k=R(2,10), T=2*k, a=s*k; if(!isInt(a)) continue;
+    return num({stem:`${N} walks ${a} m to the store and then ${a} m back along the same path to the starting point. The whole trip takes ${T} s. What is ${N}'s average <b>speed</b>?`,
+      hints:['Average speed uses the total distance walked.','The distance there and back is double the one-way distance.',`Total distance = ${2*a} m. Divide by ${T} s.`],
+      steps:[`Total distance = ${a} + ${a} = ${2*a} m.`,`speed = ${2*a} m \u00f7 ${T} s = <b>${fmt(s)} m/s</b>`]}, s, 'm/s');
+  }
+});
+reg(5,1,'av-round-vel',()=>{
+  const N=name(), a=R(20,200), T=R(10,60);
+  return num({stem:`${N} runs ${a} m around the block and ends up right back at the starting point after ${T} s. What is ${N}'s average <b>velocity</b>?`,
+    hints:['Velocity uses displacement, not distance.','What is the displacement if the finish is the same as the start?','Zero displacement divided by any time is zero.'],
+    steps:['Start and finish are the same place, so the displacement is 0 m.',`velocity = 0 m \u00f7 ${T} s = <b>0 m/s</b>`]}, 0, 'm/s');
+});
+reg(5,2,'av-legs-vel',()=>{
+  for(let i=0;i<200;i++){
+    const N=name(), T=pick([4,5,6,8,10]), v=pick([-2,-1,-0.5,0.5,1,1.5,2,3]), D=v*T; if(!isInt(D)) continue;
+    const b=R(2,8), a=D+b; if(a<2) continue;
+    return num({stem:`East is positive. ${N} walks ${a} m east and then ${b} m west, taking ${T} s in all. What is ${N}'s average <b>velocity</b>?`,
+      hints:['Average velocity = displacement \u00f7 time.','First find the displacement with signs: east is +, west is \u2212.',`(${a} \u2212 ${b}) \u00f7 ${T}`],
+      steps:[`Displacement = ${a} \u2212 ${b} = ${fmt(D)} m.`,`velocity = ${fmt(D)} m \u00f7 ${T} s = <b>${fmt(v)} m/s</b>`]}, v, 'm/s');
+  }
+});
+reg(5,2,'av-legs-speed',()=>{
+  for(let i=0;i<200;i++){
+    const N=name(), T=pick([4,5,6,8,10]), S=pick([1,1.5,2,2.5,3,4]), tot=S*T; if(!isInt(tot)) continue;
+    const b=R(1,tot-1), a=tot-b;
+    return num({stem:`${N} walks ${a} m east and then ${b} m west, taking ${T} s in all. What is ${N}'s average <b>speed</b>?`,
+      hints:['Average speed = total distance \u00f7 total time.','Distance adds every leg, no matter the direction.',`(${a} + ${b}) \u00f7 ${T}`],
+      steps:[`Total distance = ${a} + ${b} = ${tot} m.`,`speed = ${tot} m \u00f7 ${T} s = <b>${fmt(S)} m/s</b>`]}, S, 'm/s');
+  }
+});
+reg(5,3,'av-zero',()=>{
+  const [A,B,C,D]=[name(),name(),name(),name()];
+  return mc({stem:'Which person has an average <b>velocity of exactly zero</b>?',
+    hints:['Average velocity is zero when the displacement is zero.','Which person ends up exactly where they started?','Look for a round trip or a full lap.'],
+    steps:['Zero average velocity means zero displacement (finish = start).',`Only the person who finishes a full lap back at the start has a displacement of 0 m.`]},
+    `${A} runs once around a 400 m track and finishes on the starting line`,
+    [`${B} walks 100 m east`,`${C} bikes 5 km north and then 2 km south`,`${D} runs 50 m forward and 20 m back`]);
+});
+reg(5,3,'av-shuttle',()=>{
+  for(let i=0;i<500;i++){
+    const N=name(), a=pick([3,4,5,6,8,10]), T=pick([4,5,6,8,10,12,15]), S=4*a/T; if(!isHalf(S)||S<1) continue;
+    return num({stem:`${N} runs a shuttle drill: ${a} m right, ${2*a} m left, then ${a} m right again, finishing right where ${N} started. The drill takes ${T} s. What is the average <b>speed</b>?`,
+      hints:['Average speed uses total distance, even when the path turns around.','Add up all three legs.',`${a} + ${2*a} + ${a}, then divide by ${T}.`],
+      steps:[`Total distance = ${a} + ${2*a} + ${a} = ${4*a} m.`,`speed = ${4*a} m \u00f7 ${T} s = <b>${fmt(S)} m/s</b>`,'(The average velocity would be 0 m/s since the finish is the start.)']}, S, 'm/s');
+  }
+});
+
+/* =====================  TOPIC 6: POSITION-TIME GRAPHS  ===================== */
+function genPT(){
+  for(let tries=0;tries<500;tries++){
+    const kinds=shuffle(['up','flat','down']);
+    const mags=shuffle([0.5,1,1.5,2,3]).slice(0,2); let mi=0;
+    const x0=R(-2,4), pts=[[0,x0]], segs=[]; let t=0,x=x0;
+    for(const k of kinds){
+      const d=pick([2,4]); let sl=0; if(k==='up') sl=mags[mi++]; else if(k==='down') sl=-mags[mi++];
+      const nx=x+sl*d; segs.push({t0:t,t1:t+d,x0:x,x1:nx,slope:sl,kind:k}); t+=d; pts.push([t,nx]); x=nx;
+    }
+    const ys=pts.map(p=>p[1]); if(Math.max(...ys)>9||Math.min(...ys)<-6) continue;
+    return {pts,segs,T:t};
+  }
+}
+const ivl = s => `${s.t0}\u2013${s.t1} s`;
+reg(6,1,'pt-read',()=>{
+  const g=genPT(), N=name(), p=pick(g.pts);
+  return num({stem:`The graph shows ${N}'s position over time. What is ${N}'s position at t = ${p[0]} s?`, svg:ptGraph(g),
+    hints:['Find the time on the bottom axis.','Go straight up to the line, then straight across to the position axis.',`Look at the dot at ${p[0]} s.`],
+    steps:[`Find t = ${p[0]} s on the horizontal axis.`,`Go up to the line and across to the position axis: <b>${fmt(p[1])} m</b>.`]}, p[1], 'm');
+});
+reg(6,1,'pt-rest',()=>{
+  const g=genPT(), N=name(), flat=g.segs.find(s=>s.kind==='flat'), others=g.segs.filter(s=>s!==flat);
+  return mc({stem:`The graph shows ${N}'s position over time. During which time interval is ${N} <b>at rest</b>?`, svg:ptGraph(g),
+    hints:['At rest means the position is not changing.','What does the line look like when position stays the same?','A flat (horizontal) line means at rest.'],
+    steps:['At rest means the position does not change, so the line is <b>flat</b>.',`The flat part is <b>${ivl(flat)}</b>.`]},
+    ivl(flat), others.map(ivl).concat([`0\u2013${g.T} s (the whole trip)`]));
+});
+reg(6,2,'pt-vel',()=>{
+  const g=genPT(), N=name(), s=pick(g.segs.filter(x=>x.slope!==0));
+  return num({stem:`The graph shows ${N}'s position over time. What is ${N}'s <b>velocity</b> from ${s.t0} s to ${s.t1} s?`, svg:ptGraph(g),
+    hints:['On a position-time graph, velocity is the slope.','slope = rise \u00f7 run = (change in position) \u00f7 (change in time).',`Position goes from ${fmt(s.x0)} m to ${fmt(s.x1)} m while time goes from ${s.t0} s to ${s.t1} s.`],
+    steps:[`At ${s.t0} s the position is ${fmt(s.x0)} m. At ${s.t1} s it is ${fmt(s.x1)} m.`,`velocity = (${fmt(s.x1)} \u2212 ${fmt(s.x0)}) \u00f7 (${s.t1} \u2212 ${s.t0}) = <b>${fmt(s.slope)} m/s</b>`]}, s.slope, 'm/s');
+});
+reg(6,2,'pt-neg',()=>{
+  const g=genPT(), N=name(), neg=g.segs.find(s=>s.slope<0), others=g.segs.filter(s=>s!==neg);
+  return mc({stem:`The graph shows ${N}'s position over time. During which interval is ${N} moving in the <b>negative direction</b> (toward smaller positions)?`, svg:ptGraph(g),
+    hints:['Moving in the negative direction means the position is getting smaller.','Which part of the line slopes downward?','Downward slope = negative velocity.'],
+    steps:['Position is decreasing where the line slopes <b>down</b>.',`That is <b>${ivl(neg)}</b>.`]},
+    ivl(neg), others.map(ivl).concat([`${N} never moves in the negative direction`]));
+});
+reg(6,2,'pt-fast',()=>{
+  const g=genPT(), N=name(), nz=g.segs.filter(s=>s.slope!==0), fast=nz.reduce((a,b)=>Math.abs(a.slope)>Math.abs(b.slope)?a:b), others=g.segs.filter(s=>s!==fast);
+  return mc({stem:`The graph shows ${N}'s position over time. During which interval is ${N} moving the <b>fastest</b>?`, svg:ptGraph(g),
+    hints:['Fast motion means a big change in position in a short time.','The steepest part of the line shows the fastest motion (up or down).','Compare how steep each segment is. Ignore whether it goes up or down.'],
+    steps:['Speed is the <b>steepness</b> of the line, whether it slopes up or down.',`The steepest segment is <b>${ivl(fast)}</b>.`]},
+    ivl(fast), others.map(ivl).concat(['The speed is the same in every interval']));
+});
+reg(6,3,'pt-avgvel',()=>{
+  for(let i=0;i<300;i++){
+    const g=genPT(), N=name(), ans=(g.pts[3][1]-g.pts[0][1])/g.T; if(!isHalf(ans)) continue;
+    return num({stem:`Use the graph of ${N}'s whole ${g.T} s trip. What is ${N}'s average <b>velocity</b> for the entire trip?`, svg:ptGraph(g),
+      hints:['Average velocity = total displacement \u00f7 total time.','Only the start and the end positions matter.',`Start: ${fmt(g.pts[0][1])} m at 0 s. End: ${fmt(g.pts[3][1])} m at ${g.T} s.`],
+      steps:[`Displacement = ${fmt(g.pts[3][1])} \u2212 ${fmt(g.pts[0][1])} = ${fmt(g.pts[3][1]-g.pts[0][1])} m.`,`velocity = ${fmt(g.pts[3][1]-g.pts[0][1])} \u00f7 ${g.T} = <b>${fmt(ans)} m/s</b>`]}, ans, 'm/s');
+  }
+});
+reg(6,3,'pt-avgspeed',()=>{
+  for(let i=0;i<300;i++){
+    const g=genPT(), N=name(), dist=g.segs.reduce((a,s)=>a+Math.abs(s.x1-s.x0),0), ans=dist/g.T; if(!isHalf(ans)) continue;
+    return num({stem:`Use the graph of ${N}'s whole ${g.T} s trip. What is ${N}'s average <b>speed</b> for the entire trip?`, svg:ptGraph(g),
+      hints:['Average speed = total distance \u00f7 total time.','Find how far was traveled in each segment, ignoring direction, and add them.',`Distances: ${g.segs.map(s=>fmt(Math.abs(s.x1-s.x0))+' m').join(', ')}.`],
+      steps:[`Distance in each segment: ${g.segs.map(s=>fmt(Math.abs(s.x1-s.x0))).join(' + ')} = ${fmt(dist)} m.`,`speed = ${fmt(dist)} \u00f7 ${g.T} = <b>${fmt(ans)} m/s</b>`]}, ans, 'm/s');
+  }
+});
+reg(6,3,'pt-meet',()=>{
+  for(let i=0;i<500;i++){
+    const A=name(), B=name(), tm=R(2,8), vA=pick([1,1.5,2,2.5,-1,-2]), xm=vA*tm; if(!isInt(xm)) continue;
+    const xB=R(-6,8), vB=(xm-xB)/tm; if(!isHalf(vB)||vB===vA) continue;
+    const T=10, yA=vA*T, yB=xB+vB*T; if(Math.max(yA,yB,xB,0)>12||Math.min(yA,yB,xB,0)<-8) continue;
+    const mn=Math.min(0,yA,yB,xB), mx=Math.max(0,yA,yB,xB);
+    const svg=graphSVG({xmax:T, ymin: mn<0?Math.floor(mn)-1:0, ymax:Math.ceil(mx)+1, ylabel:'Position (m)', alt:'position-time graph with two lines',
+      lines:[{pts:[[0,0],[T,yA]],color:BLUE,label:A},{pts:[[0,xB],[T,yB]],color:ORANGE,label:B}]});
+    return num({stem:`The graph shows the positions of ${A} (blue) and ${B} (orange) as they walk along a hallway. At what time are they at the <b>same position</b>?`, svg,
+      hints:['Two objects are at the same position where their lines cross.','Find the spot where the blue and orange lines meet.','Read straight down from the crossing point to the time axis.'],
+      steps:['The lines cross where the two objects share a position.',`Reading down from the crossing point gives <b>${tm} s</b> (at position ${fmt(xm)} m).`]}, tm, 's');
+  }
+});
+
+/* =====================  TOPIC 7: VELOCITY-TIME GRAPHS  ===================== */
+function genVT(sign, needDiff){
+  for(;;){
+    const v1=pick([4,6,8,10]), d1=pick([2,4]), d2=pick([2,4]), d3=pick([2,4]), d4=pick([2,4]);
+    if(needDiff && d1===d3) continue;
+    const s=sign||1, T=d1+d2+d3+d4;
+    const pts=[[0,0],[d1,s*v1],[d1+d2,s*v1],[d1+d2+d3,0],[T,0]];
+    const segs=[{k:'up',t0:0,t1:d1,a:s*v1/d1},{k:'flat',t0:d1,t1:d1+d2,a:0,v:s*v1},{k:'down',t0:d1+d2,t1:d1+d2+d3,a:-s*v1/d3},{k:'rest',t0:d1+d2+d3,t1:T,a:0,v:0}];
+    return {pts,segs,T,v1:s*v1};
+  }
+}
+const ivl7 = s => `${s.t0}\u2013${s.t1} s`;
+const MOTION_CHOICES = ['Speeding up','Slowing down','Moving at a constant velocity','At rest (not moving)'];
+reg(7,1,'vt-what',()=>{
+  const g=genVT(1), N=name(), seg=pick(g.segs), map={up:0,down:1,flat:2,rest:3};
+  const right=MOTION_CHOICES[map[seg.k]], wrong=MOTION_CHOICES.filter((_,i)=>i!==map[seg.k]);
+  const why={up:'The line slopes up, so the velocity is increasing.',down:'The line slopes down toward zero, so the velocity is decreasing.',flat:'The line is flat above zero, so the velocity stays the same (not zero).',rest:'The line is flat <i>at zero</i>, so the velocity is 0 and the object is not moving.'};
+  return mc({stem:`The graph shows ${N}'s velocity over time. What is happening from ${seg.t0} s to ${seg.t1} s?`, svg:vtGraph(g),
+    hints:['This is a <i>velocity</i>-time graph. The height of the line is the velocity.','Is the line going up, going down, or flat? If flat, is it at zero?',`Between ${seg.t0} s and ${seg.t1} s, look at the shape of the line.`],
+    steps:[why[seg.k],`So the answer is <b>${right}</b>.`]}, right, wrong);
+});
+reg(7,1,'vt-read',()=>{
+  const g=genVT(1), N=name(), p=pick([g.pts[1],g.pts[2],g.pts[3]]);
+  return num({stem:`The graph shows ${N}'s velocity over time. What is ${N}'s velocity at t = ${p[0]} s?`, svg:vtGraph(g),
+    hints:['Find the time on the bottom axis.','Go up to the line and read across to the velocity axis.',`At ${p[0]} s the line is at a dot.`],
+    steps:[`Find ${p[0]} s on the time axis, go up to the line, and read across: <b>${fmt(p[1])} m/s</b>.`]}, p[1], 'm/s');
+});
+reg(7,2,'vt-accel',()=>{
+  const g=genVT(1), N=name(), s=pick([g.segs[0],g.segs[2]]), v0=s.k==='up'?0:g.v1, v1=s.k==='up'?g.v1:0;
+  return num({stem:`The graph shows ${N}'s velocity over time. What is ${N}'s <b>acceleration</b> from ${s.t0} s to ${s.t1} s?`, svg:vtGraph(g),
+    hints:['On a velocity-time graph, acceleration is the slope.','acceleration = (change in velocity) \u00f7 (change in time).',`Velocity goes from ${v0} m/s to ${v1} m/s in ${s.t1-s.t0} s.`],
+    steps:[`Change in velocity = ${v1} \u2212 ${v0} = ${v1-v0} m/s.`,`Change in time = ${s.t1} \u2212 ${s.t0} = ${s.t1-s.t0} s.`,`acceleration = ${v1-v0} \u00f7 ${s.t1-s.t0} = <b>${fmt(s.a)} m/s\u00b2</b>`]}, s.a, 'm/s\u00b2');
+});
+reg(7,2,'vt-rest',()=>{
+  const g=genVT(1), N=name(), askRest=Math.random()<0.5, tgt=g.segs.find(s=>s.k===(askRest?'rest':'flat'));
+  return mc({stem: askRest ? `The graph shows ${N}'s velocity over time. During which interval is ${N} <b>at rest</b>?` : `The graph shows ${N}'s velocity over time. During which interval is ${N} moving at a <b>constant velocity</b> (not at rest)?`, svg:vtGraph(g),
+    hints: askRest ? ['At rest means the velocity is zero.','Look for a part of the line sitting at v = 0.','The line lies on the horizontal axis (zero).'] : ['Constant velocity means the line is flat but NOT at zero.','Flat at zero would mean at rest.','Find the flat part above the zero line.'],
+    steps: askRest ? ['At rest means velocity = 0, so the line lies <b>on the zero line</b>.',`That is <b>${ivl7(tgt)}</b>.`] : ['Constant velocity: a <b>flat line above zero</b>.',`That is <b>${ivl7(tgt)}</b>.`]},
+    ivl7(tgt), g.segs.filter(s=>s!==tgt).map(ivl7));
+});
+reg(7,3,'vt-greatest',()=>{
+  const g=genVT(1,true), N=name(), big = Math.abs(g.segs[0].a)>Math.abs(g.segs[2].a) ? g.segs[0] : g.segs[2];
+  return mc({stem:`The graph shows ${N}'s velocity over time. During which interval is the <b>size of the acceleration</b> the greatest?`, svg:vtGraph(g),
+    hints:['Acceleration is the slope of a velocity-time graph.','A steeper line means a bigger acceleration. Flat lines mean zero acceleration.','Compare the two sloped segments. Which is steeper?'],
+    steps:['Acceleration = slope. Flat parts have zero acceleration.',`Of the two slanted parts, the steeper one is <b>${ivl7(big)}</b>.`]},
+    ivl7(big), g.segs.filter(s=>s!==big).map(ivl7));
+});
+reg(7,3,'vt-slowing',()=>{
+  const g=genVT(1), N=name(), tgt=g.segs[2];
+  return mc({stem:`The graph shows ${N}'s velocity over time. During which interval is ${N} <b>slowing down</b>?`, svg:vtGraph(g),
+    hints:['Slowing down means the velocity is getting smaller.','Which part of the line slopes downward?','Look for the segment where the line falls toward zero.'],
+    steps:['Slowing down means the velocity (height of the line) is decreasing.',`The line falls during <b>${ivl7(tgt)}</b>.`]},
+    ivl7(tgt), g.segs.filter(s=>s!==tgt).map(ivl7));
+});
+reg(7,3,'vt-negaccel',()=>{
+  const g=genVT(-1), N=name(), s=g.segs[0];
+  return num({stem:`The graph shows ${N}'s velocity over time. (Negative velocity means moving in the negative direction.) What is ${N}'s <b>acceleration</b> from ${s.t0} s to ${s.t1} s?`, svg:vtGraph(g),
+    hints:['Acceleration is the slope.','The velocity goes from 0 to a negative number, so the slope is negative.',`Change in velocity = ${fmt(g.v1)} \u2212 0 over ${s.t1-s.t0} s.`],
+    steps:[`Change in velocity = ${fmt(g.v1)} \u2212 0 = ${fmt(g.v1)} m/s.`,`acceleration = ${fmt(g.v1)} \u00f7 ${s.t1-s.t0} = <b>${fmt(s.a)} m/s\u00b2</b> (speeding up in the negative direction).`]}, s.a, 'm/s\u00b2');
+});
+
+/* =====================  TOPIC 8: ACCELERATION MATH  ===================== */
+reg(8,1,'ac-find',()=>{
+  for(;;){
+    const N=name(), a=pick([1,1.5,2,2.5,3,4,5]), t=R(2,8), v1=R(0,12), v2=v1+a*t; if(!isInt(v2)) continue;
+    return num({stem:`${N}'s scooter speeds up from ${v1} m/s to ${v2} m/s in ${t} s. What is the acceleration?`,
+      hints:['Acceleration is how much the velocity changes each second.','a = (final velocity \u2212 initial velocity) \u00f7 time',`(${v2} \u2212 ${v1}) \u00f7 ${t}`],
+      steps:['a = (v\u2082 \u2212 v\u2081) \u00f7 t',`= (${v2} \u2212 ${v1}) \u00f7 ${t} = ${v2-v1} \u00f7 ${t} = <b>${fmt(a)} m/s\u00b2</b>`]}, a, 'm/s\u00b2');
+  }
+});
+reg(8,1,'ac-rest',()=>{
+  for(;;){
+    const N=name(), a=pick([1,1.5,2,2.5,3,4,5]), t=R(2,8), v=a*t; if(!isInt(v)) continue;
+    return num({stem:`${N} starts from rest and speeds up at ${fmt(a)} m/s\u00b2 for ${t} s. What is the final speed?`,
+      hints:['Starting from rest means the initial velocity is 0.','Rearrange the formula: v\u2082 = v\u2081 + a \u00d7 t.',`0 + ${fmt(a)} \u00d7 ${t}`],
+      steps:['v\u2082 = v\u2081 + a \u00d7 t',`= 0 + ${fmt(a)} \u00d7 ${t} = <b>${fmt(v)} m/s</b>`]}, v, 'm/s');
+  }
+});
+reg(8,2,'ac-slow',()=>{
+  for(;;){
+    const N=name(), a=pick([1,1.5,2,2.5,3,4]), t=R(2,8), v2=R(0,6), v1=v2+a*t; if(!isInt(v1)) continue;
+    return num({stem:`${N}'s bike slows from ${v1} m/s to ${v2} m/s in ${t} s. What is the acceleration? (Pay attention to the sign.)`,
+      hints:['Use a = (final \u2212 initial) \u00f7 time.','The final velocity is smaller, so the answer will be negative.',`(${v2} \u2212 ${v1}) \u00f7 ${t}`],
+      steps:['a = (v\u2082 \u2212 v\u2081) \u00f7 t',`= (${v2} \u2212 ${v1}) \u00f7 ${t} = ${v2-v1} \u00f7 ${t} = <b>${fmt(-a)} m/s\u00b2</b>`,'The negative sign means slowing down.']}, -a, 'm/s\u00b2');
+  }
+});
+reg(8,2,'ac-final',()=>{
+  for(;;){
+    const N=name(), a=pick([1,1.5,2,2.5,3,4]), t=R(2,8), v1=R(1,10), v2=v1+a*t; if(!isInt(v2)) continue;
+    return num({stem:`${N}'s cart is rolling at ${v1} m/s and then speeds up at ${fmt(a)} m/s\u00b2 for ${t} s. What is the cart's new speed?`,
+      hints:['Rearrange a = (v\u2082 \u2212 v\u2081) \u00f7 t to solve for v\u2082.','v\u2082 = v\u2081 + a \u00d7 t','Remember to add the starting speed.'],
+      steps:['v\u2082 = v\u2081 + a \u00d7 t',`= ${v1} + ${fmt(a)} \u00d7 ${t} = ${v1} + ${fmt(a*t)} = <b>${fmt(v2)} m/s</b>`]}, v2, 'm/s');
+  }
+});
+reg(8,2,'ac-time',()=>{
+  for(;;){
+    const N=name(), a=pick([1,2,2.5,3,4,5]), t=R(2,9), v1=R(0,8), v2=v1+a*t; if(!isInt(v2)) continue;
+    return num({stem:`${N}'s skateboard speeds up from ${v1} m/s to ${v2} m/s at a steady ${fmt(a)} m/s\u00b2. How long does that take?`,
+      hints:['You are solving for time this time.','Rearrange: t = (v\u2082 \u2212 v\u2081) \u00f7 a.',`(${v2} \u2212 ${v1}) \u00f7 ${fmt(a)}`],
+      steps:['t = (v\u2082 \u2212 v\u2081) \u00f7 a',`= (${v2} \u2212 ${v1}) \u00f7 ${fmt(a)} = ${v2-v1} \u00f7 ${fmt(a)} = <b>${fmt(t)} s</b>`]}, t, 's');
+  }
+});
+reg(8,3,'ac-table',()=>{
+  for(;;){
+    const N=name(), a=pick([1,1.5,2,2.5,3,4]), v0=pick([0,0,2,4]), times=[0,2,4,6,8,10], blank=pick([2,3,4]);
+    const vals=times.map(t=>v0+a*t); if(!vals.every(isInt)) continue;
+    const rows=times.map((t,i)=>`<tr><td>${t}</td><td>${i===blank?'?':vals[i]}</td></tr>`).join('');
+    return num({stem:`${N} measures a ball rolling down a ramp with a <b>constant acceleration</b>. Find the missing speed in the table.<table class="data"><tr><th>Time (s)</th><th>Speed (m/s)</th></tr>${rows}</table>`,
+      hints:['The acceleration is the same all the way down.','First find the acceleration using two rows you know.',`Speed rises by ${fmt(a*2)} m/s every 2 s.`],
+      steps:[`Between 0 s and 2 s, the speed goes from ${vals[0]} to ${vals[1]}: a = ${fmt(a)} m/s\u00b2.`,`The speed at ${times[blank]} s = ${vals[0]} + ${fmt(a)} \u00d7 ${times[blank]} = <b>${fmt(vals[blank])} m/s</b>`]}, vals[blank], 'm/s');
+  }
+});
+reg(8,3,'ac-brake',()=>{
+  for(let i=0;i<500;i++){
+    const N=name(), a=pick([2,4,5]), t=pick([2,2.5,3,3.5,4,4.5,5,6]), v=a*t; if(!isInt(v)) continue;
+    return num({stem:`${N} is riding in a car going ${v} m/s. The driver brakes to a complete stop with an acceleration of \u2212${a} m/s\u00b2. How long does it take to stop?`,
+      hints:['A complete stop means the final velocity is 0.','t = (v\u2082 \u2212 v\u2081) \u00f7 a','Both the top (0 \u2212 '+v+') and the acceleration are negative, so the time comes out positive.'],
+      steps:['t = (v\u2082 \u2212 v\u2081) \u00f7 a',`= (0 \u2212 ${v}) \u00f7 (\u2212${a}) = <b>${fmt(t)} s</b>`]}, t, 's');
+  }
+});
+
+
+/* --- balance: every level gets all three types (find a, find vf, find t) --- */
+reg(8,1,'ac-time-rest',()=>{
+  for(;;){
+    const N=name(), a=pick([1,2,2.5,3,4,5]), t=R(2,9), v=a*t; if(!isInt(v)) continue;
+    return num({stem:`${N} starts from rest and speeds up at ${fmt(a)} m/s\u00b2 until reaching ${v} m/s. How long does that take?`,
+      hints:['You know the acceleration and the final speed. You want the time.','Rearrange: t = (v\u2082 \u2212 v\u2081) \u00f7 a. Starting from rest, v\u2081 = 0.',`${v} \u00f7 ${fmt(a)}`],
+      steps:['t = (v\u2082 \u2212 v\u2081) \u00f7 a',`= (${v} \u2212 0) \u00f7 ${fmt(a)} = <b>${fmt(t)} s</b>`]}, t, 's');
+  }
+});
+reg(8,3,'ac-brake-a',()=>{
+  for(let i=0;i<500;i++){
+    const N=name(), a=pick([2,2.5,4,5]), t=pick([2,3,4,5,6,8]), v=a*t; if(!isInt(v)) continue;
+    return num({stem:`${N} is riding in a car going ${v} m/s. The driver brakes and the car comes to a complete stop in ${t} s. What is the car's acceleration?`,
+      hints:['A complete stop means the final velocity is 0.','a = (v\u2082 \u2212 v\u2081) \u00f7 t. The final speed is smaller than the starting speed, so expect a negative answer.',`(0 \u2212 ${v}) \u00f7 ${t}`],
+      steps:['a = (v\u2082 \u2212 v\u2081) \u00f7 t',`= (0 \u2212 ${v}) \u00f7 ${t} = <b>${fmt(-a)} m/s\u00b2</b>`,'The negative sign means the car is slowing down.']}, -a, 'm/s\u00b2');
+  }
+});
+reg(8,3,'ac-slow-vf',()=>{
+  for(let i=0;i<500;i++){
+    const N=name(), a=pick([1,1.5,2,2.5,3]), t=R(2,6), v1=R(8,20), v2=v1-a*t; if(!isInt(v2)||v2<1) continue;
+    return num({stem:`${N}'s bike is rolling at ${v1} m/s and slows down with an acceleration of \u2212${fmt(a)} m/s\u00b2 for ${t} s. What is the bike's final speed?`,
+      hints:['Use v\u2082 = v\u2081 + a \u00d7 t.','The acceleration is negative, so the speed goes down.',`${v1} + (\u2212${fmt(a)}) \u00d7 ${t}`],
+      steps:['v\u2082 = v\u2081 + a \u00d7 t',`= ${v1} + (\u2212${fmt(a)}) \u00d7 ${t} = ${v1} \u2212 ${fmt(a*t)} = <b>${fmt(v2)} m/s</b>`]}, v2, 'm/s');
+  }
+});
+const KINDS={'ac-find':'a','ac-slow':'a','ac-brake-a':'a','ac-rest':'vf','ac-final':'vf','ac-slow-vf':'vf','ac-table':'vf','ac-time-rest':'t','ac-time':'t','ac-brake':'t'};
+const KIND_LABEL={a:'Find the acceleration',vf:'Find the final velocity',t:'Find the time'};
+
+/* =====================  TOPIC 9: ACCELERATION IDEAS  ===================== */
+const ACC_YES=['A sprinter bursts out of the starting blocks and speeds up','A bus driver hits the brakes to stop at a red light','A cyclist rides around a curve at a constant speed of 8 m/s','A rock falls off a cliff','A roller coaster car speeds up as it rolls down the first hill','A swimmer pushes off the wall and gradually slows down'];
+const ACC_NO=['A cart rolls along a straight, flat track at a constant 2 m/s','A bike sits parked in the rack','A puck slides in a straight line at a constant speed across smooth ice','An elevator rises at a steady 3 m/s','A dog naps on the couch','A train moves along a straight track at a steady 30 m/s'];
+reg(9,1,'ai-which',()=>{
+  const notAcc=Math.random()<0.5;
+  if(notAcc){
+    const r=pick(ACC_NO), w=shuffle(ACC_YES).slice(0,3);
+    return mc({stem:'Which of these is <b>NOT</b> accelerating?',
+      hints:['Acceleration means velocity is changing.','Velocity changes when speed changes <i>or</i> direction changes.','Which one has the same speed and the same direction the whole time (or is not moving)?'],
+      steps:['Acceleration = any change in velocity: speeding up, slowing down, or turning.',`"${r}" has no change in velocity, so it is <b>not accelerating</b>.`]}, r, w);
+  }
+  const r=pick(ACC_YES), w=shuffle(ACC_NO).slice(0,3);
+  return mc({stem:'Which of these <b>is</b> accelerating?',
+    hints:['Acceleration means velocity is changing.','Velocity changes when speed changes <i>or</i> direction changes.','Look for speeding up, slowing down, or turning.'],
+    steps:['Acceleration = any change in velocity: speeding up, slowing down, or turning.',`"${r}" involves a change in velocity, so it <b>is accelerating</b>.`]}, r, w);
+});
+reg(9,1,'ai-unit',()=>{
+  return mc({stem:'What is the correct unit for <b>acceleration</b>?',
+    hints:['Acceleration is the change in velocity per second.','Velocity is m/s. Now divide by time (s) again.','m/s \u00f7 s = m/s\u00b2'],
+    steps:['Acceleration = (change in velocity) \u00f7 time = (m/s) \u00f7 s.','That gives <b>m/s\u00b2</b>.']}, 'm/s\u00b2', ['m/s','m','s/m\u00b2']);
+});
+reg(9,2,'ai-ways',()=>{
+  return mc({stem:'Which of these is <b>not</b> a way an object can accelerate?',
+    hints:['Acceleration means velocity changes.','Velocity changes when speed or direction changes.','Which choice has nothing changing?'],
+    steps:['You can accelerate by speeding up, slowing down, or changing direction.','<b>Moving at a constant velocity</b> in a straight line means no acceleration.']},
+    'Moving at a constant velocity in a straight line', ['Speeding up','Slowing down','Changing direction']);
+});
+function signQ(vSign){
+  const N=name(), v=R(2,9), a=R(1,4), sv=vSign;
+  const sa = Math.random()<0.5 ? 1 : -1;
+  const speedingUp = sv*sa>0;
+  const right = speedingUp ? 'Speeding up' : 'Slowing down';
+  const wrong = ['Speeding up','Slowing down','Moving at a constant speed','Standing still'].filter(x=>x!==right);
+  const dirName = sv>0?'positive':'negative';
+  return mc({stem:`${N}'s velocity is ${sv>0?'+':'\u2212'}${v} m/s and ${N}'s acceleration is ${sa>0?'+':'\u2212'}${a} m/s\u00b2. What is ${N} doing?`,
+    hints:['Compare the sign of the velocity with the sign of the acceleration.','Same signs: the speed grows. Opposite signs: the speed shrinks.',`Velocity is ${sv>0?'positive':'negative'} and acceleration is ${sa>0?'positive':'negative'}.`],
+    steps:[`Velocity is ${dirName} and acceleration is ${sa>0?'positive':'negative'}.`,`${speedingUp?'The signs match, so the speed increases':'The signs are opposite, so the speed decreases'}: <b>${right}</b>.`]}, right, wrong);
+}
+reg(9,2,'ai-sign-pos',()=>signQ(1));
+reg(9,3,'ai-sign-neg',()=>signQ(-1));
+reg(9,3,'ai-greatest',()=>{
+  const as=shuffle([1,2,3,4,5,6]).slice(0,4), names=[name(),name(),name(),name()];
+  const rows=as.map((a,i)=>{ const t=pick([2,3,4,5]), x=pick([0,2,4]); return {n:names[i], a, t, x, y:x+a*t}; });
+  const best=rows.reduce((p,c)=>c.a>p.a?c:p);
+  const txt=r=>`${r.n}: ${r.x} m/s to ${r.y} m/s in ${r.t} s`;
+  return mc({stem:'Four skateboarders change speed as shown. Who has the <b>greatest acceleration</b>?',
+    hints:['Calculate each acceleration with a = (final \u2212 initial) \u00f7 time.','Compare the four answers.',`Try the first one: (${rows[0].y} \u2212 ${rows[0].x}) \u00f7 ${rows[0].t}.`],
+    steps:rows.map(r=>`${r.n}: (${r.y} \u2212 ${r.x}) \u00f7 ${r.t} = ${r.a} m/s\u00b2`).concat([`The greatest is <b>${best.n}</b> at ${best.a} m/s\u00b2.`])},
+    txt(best), rows.filter(r=>r!==best).map(txt));
+});
+
+/* =====================  TOPIC 10: GRAPH MATCHING  ===================== */
+const PSH = {
+  rest:{pts:[[0,.5],[1,.5]], story:N=>`${N} stands still, 3 m to the right of a cone, the whole time.`},
+  away:{pts:[[0,0],[1,.8]], story:N=>`${N} starts at the cone and walks steadily to the right, away from the cone.`},
+  toward:{pts:[[0,.8],[.6,0],[1,0]], story:N=>`${N} starts to the right of the cone, walks steadily toward it, and stops when reaching the cone.`},
+  awayRest:{pts:[[0,0],[.5,.7],[1,.7]], story:N=>`${N} starts at the cone, walks steadily to the right, and then stands still.`},
+  outBack:{pts:[[0,0],[.5,.7],[1,0]], story:N=>`${N} walks steadily to the right, away from the cone, then turns around and walks back to the cone at the same speed.`},
+  restLeft:{pts:[[0,0],[.4,0],[1,-.8]], story:N=>`${N} stands at the cone for a while, then walks steadily to the left.`},
+  left:{pts:[[0,0],[1,-.8]], story:N=>`${N} starts at the cone and walks steadily to the left.`},
+  curveUp:{pts:curve(t=>.85*t*t), story:N=>`${N} starts at the cone from rest and speeds up steadily while moving to the right.`},
+  curveDown:{pts:curve(t=>.85*(1-(1-t)*(1-t))), story:N=>`${N} starts at the cone and moves to the right, slowing down steadily until stopping.`}
+};
+const VSH = {
+  fromRest:{pts:[[0,0],[1,.8]], story:N=>`${N} speeds up steadily from rest, moving in the positive direction.`},
+  constPos:{pts:[[0,.5],[1,.5]], story:N=>`${N} moves at a constant speed in the positive direction.`},
+  slowStop:{pts:[[0,.8],[1,0]], story:N=>`${N} is moving in the positive direction and slows down steadily until stopping.`},
+  rest:{pts:[[0,0],[1,0]], story:N=>`${N} stands completely still.`},
+  upConst:{pts:[[0,0],[.4,.6],[1,.6]], story:N=>`${N} speeds up from rest and then keeps moving at a constant velocity.`},
+  constNeg:{pts:[[0,-.5],[1,-.5]], story:N=>`${N} moves at a constant speed in the negative direction.`},
+  upDown:{pts:[[0,0],[.5,.7],[1,0]], story:N=>`${N} speeds up from rest, then slows down steadily to a stop.`},
+  step:{pts:[[0,.6],[.5,.6],[.5,0],[1,0]], story:N=>''}
+};
+reg(10,1,'gm-story-pos',()=>{
+  const N=name(), keys=['rest','away','toward','awayRest','outBack','restLeft','left'], k=pick(keys), others=shuffle(keys.filter(x=>x!==k)).slice(0,3);
+  return mc({stem:`Which <b>position-time</b> graph matches this story? The horizontal line is the cone (position 0), positive is to the right.<br><i>${PSH[k].story(N)}</i>`,
+    hints:['Flat = at rest. Sloping up = moving to the positive side. Sloping down = moving to the negative side.','Where does the graph start? Above, on, or below the cone line?','Check each part of the story against each part of the graph.'],
+    steps:['Read the story one piece at a time and match each piece to the shape of the line.',`The graph that fits is the one that shows exactly what the story says. Look at where it starts, whether it slopes up, down, or stays flat, and how it ends.`]},
+    {t:'',svg:miniSVG(PSH[k].pts)}, others.map(o=>({t:'',svg:miniSVG(PSH[o].pts)})));
+});
+reg(10,2,'gm-story-vel',()=>{
+  const N=name(), keys=['fromRest','constPos','slowStop','rest','upConst','constNeg','upDown'], k=pick(keys), others=shuffle(keys.filter(x=>x!==k)).slice(0,3);
+  return mc({stem:`Which <b>velocity-time</b> graph matches this story? (The horizontal line is v = 0.)<br><i>${VSH[k].story(N)}</i>`,
+    hints:['On a velocity-time graph, height = velocity. Slope = acceleration.','Speeding up from rest starts at zero and rises. Constant velocity is a flat line away from zero.','Check the start, the slope, and the end of each graph against the story.'],
+    steps:['Height shows how fast (and which way). A slanted line means the velocity is changing.','Match each part of the story to each part of the line.']},
+    {t:'',svg:miniSVG(VSH[k].pts)}, others.map(o=>({t:'',svg:miniSVG(VSH[o].pts)})));
+});
+reg(10,3,'gm-pos-to-vel',()=>{
+  const N=name(), pairs=[['away','constPos'],['rest','rest'],['left','constNeg'],['awayRest','step']];
+  const [p,v]=pick(pairs), pool=['constPos','rest','constNeg','step','fromRest'], others=shuffle(pool.filter(x=>x!==v)).slice(0,3);
+  return mc({stem:`This is ${N}'s <b>position-time</b> graph:<div class="mini-wrap">${miniSVG(PSH[p].pts,{w:220,h:150})}</div>Which <b>velocity-time</b> graph matches the same motion?`,
+    hints:['The slope of a position-time graph is the velocity.','A straight sloped line has a constant slope, so the velocity graph is flat. A flat line has zero slope, so the velocity is zero.','Break the position graph into parts and find the slope of each part.'],
+    steps:['Find the slope of each part of the position-time graph. Each slope is the velocity.','Draw those velocities as a new graph: that is the velocity-time graph.']},
+    {t:'',svg:miniSVG(VSH[v].pts)}, others.map(o=>({t:'',svg:miniSVG(VSH[o].pts)})));
+});
+reg(10,3,'gm-accel-pos',()=>{
+  const N=name(), keys=['away','rest','curveDown'], others=keys.map(o=>({t:'',svg:miniSVG(PSH[o].pts)}));
+  return mc({stem:`Which <b>position-time</b> graph shows an object that is <b>accelerating</b>?<br><i>${PSH.curveUp.story(N)}</i>`,
+    hints:['A straight line on a position-time graph means a constant velocity (no acceleration).','When the object speeds up, the line gets steeper and steeper.','Look for the curve that starts flat and gets steeper.'],
+    steps:['Speeding up means the position changes by more and more each second.','So the position-time graph curves upward, getting steeper: the <b>curve that starts flat and bends up</b>.']},
+    {t:'',svg:miniSVG(PSH.curveUp.pts)}, others);
+});
+
+/* ---------- public API ---------- */
+function build(g){
+  for(let i=0;i<60;i++){
+    resetNames();
+    let q; try{ q=g.fn(); }catch(e){ q=null; }
+    if(q){ q.topic=g.t; q.diff=g.diff; q.tid=g.id; if(KINDS[g.id]) q.kind=KINDS[g.id]; return q; }
+  }
+  throw new Error('generator failed: '+g.id);
+}
+function makeQuestion(t, lvl, avoid, kinds){
+  avoid=avoid||[]; let list=G[t];
+  if(t===8 && kinds && kinds.length && kinds.length<3) list=list.filter(g=>kinds.includes(KINDS[g.id]));
+  let pool=list.filter(g=>g.diff===lvl && !avoid.includes(g.id));
+  if(!pool.length) pool=list.filter(g=>g.diff===lvl);
+  if(!pool.length){
+    const ds=[...new Set(list.map(g=>g.diff))].sort((a,b)=>Math.abs(a-lvl)-Math.abs(b-lvl));
+    pool=list.filter(g=>g.diff===ds[0]);
+  }
+  return build(pick(pool));
+}
+function makeSimilar(q){
+  const g=G[q.topic].find(x=>x.id===q.tid); let n;
+  for(let i=0;i<10;i++){ n=build(g); if(n.stem!==q.stem) return n; }
+  return n;
+}
+
+/* ---------- progress code ---------- */
+const B32='0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+function encodeProgress(S){
+  const bytes=[0x10 | (S.pre?1:0)];
+  TOPICS.forEach(t=>{
+    const T=S.topics[t.id];
+    const m4 = T.m==null ? 0 : 1+Math.round(Math.max(0,Math.min(1,T.m))*14);
+    bytes.push((m4<<4) | ((Math.max(1,Math.min(3,T.lvl))-1)<<2) | Math.max(0,Math.min(3,T.blind)));
+  });
+  let sum=0; bytes.forEach((b,i)=>{ sum=(sum+b*(i+7))&255; }); bytes.push(sum);
+  let bits='', out='';
+  bytes.forEach(b=>{ bits+=b.toString(2).padStart(8,'0'); });
+  while(bits.length%5) bits+='0';
+  for(let i=0;i<bits.length;i+=5) out+=B32[parseInt(bits.slice(i,i+5),2)];
+  return 'KIN-'+out.match(/.{1,5}/g).join('-');
+}
+function decodeProgress(str){
+  try{
+    let s=String(str).toUpperCase().replace(/[^0-9A-Z]/g,'');
+    if(s.startsWith('KIN')) s=s.slice(3);
+    s=s.replace(/O/g,'0').replace(/[IL]/g,'1').replace(/U/g,'V');
+    let bits=''; for(const ch of s){ const i=B32.indexOf(ch); if(i<0) return null; bits+=i.toString(2).padStart(5,'0'); }
+    const n=TOPICS.length+2, bytes=[];
+    if(bits.length<n*8) return null;
+    for(let i=0;i<n;i++) bytes.push(parseInt(bits.slice(i*8,i*8+8),2));
+    if((bytes[0]>>4)!==1) return null;
+    let sum=0; for(let i=0;i<n-1;i++) sum=(sum+bytes[i]*(i+7))&255;
+    if(sum!==bytes[n-1]) return null;
+    const topics={};
+    TOPICS.forEach((t,i)=>{ const b=bytes[i+1], m4=b>>4;
+      topics[t.id]={m: m4===0?null:(m4-1)/14, lvl:((b>>2)&3)+1, streak:0, blind:b&3, n: m4===0?0:1};
+      if(topics[t.id].lvl>3) topics[t.id].lvl=3; });
+    return {topics, pre:!!(bytes[0]&1), answered:0, correct:0};
+  }catch(e){ return null; }
+}
+
+/* ======================================================================
+   Kinematics Study Lab — app
+   ====================================================================== */
+const KEY = 'kinStudyLab.v1';
+const memStore = {v:null};
+function lsGet(){ try{ return localStorage.getItem(KEY); }catch(e){ return memStore.v; } }
+function lsSet(v){ memStore.v=v; try{ localStorage.setItem(KEY,v); }catch(e){} }
+
+function freshState(){
+  const topics={}; TOPICS.forEach(t=>topics[t.id]={m:null,lvl:1,streak:0,blind:0,n:0});
+  return {topics, pre:false, answered:0, correct:0};
+}
+function loadState(){
+  const raw=lsGet();
+  if(raw){ try{ const o=JSON.parse(raw); if(o&&o.topics){ const f=freshState(); TOPICS.forEach(t=>{ if(o.topics[t.id]) f.topics[t.id]=Object.assign(f.topics[t.id],o.topics[t.id]); }); f.pre=!!o.pre; f.answered=o.answered||0; f.correct=o.correct||0; return f; } }catch(e){} }
+  return freshState();
+}
+let S = loadState();
+function save(){ lsSet(JSON.stringify(S)); }
+
+const ui = {screen:'home', kinds:new Set(['a','vf','t']), sel:new Set(), sess:null, toast:'', calcOpen:false, codeMsg:''};
+const $app = document.getElementById('app');
+
+/* ---------- mastery model ---------- */
+function status(T){
+  if(T.m==null) return {k:'new',label:'Not started'};
+  if(T.m>=0.8) return {k:'ready',label:'Ready'};
+  if(T.m>=0.5) return {k:'almost',label:'Almost there'};
+  return {k:'needs',label:'Needs practice'};
+}
+function scoreOf(o){
+  if(o.kind==='skip') return {s:0,w:0.4};
+  if(o.kind==='show') return {s:0,w:0.6};
+  if(o.correct){ const base=[0,0.6,0.85,1][o.conf]*[1,0.8,0.6,0.4][Math.min(o.hints,3)]; return {s:base,w:1}; }
+  return {s:[0,0.15,0.05,0][o.conf],w:1};
+}
+function record(q,o,mode){
+  const T=S.topics[q.topic], {s,w}=scoreOf(o); let levelMsg='';
+  T.m = T.m==null ? s : T.m + 0.4*w*(s-T.m);
+  T.n++;
+  S.answered++; if(o.kind==='answer'&&o.correct) S.correct++;
+  if(o.kind==='answer' && !o.correct && o.conf===3) T.blind=Math.min(3,T.blind+1);
+  if(o.kind==='answer' && o.correct && o.conf>=2 && o.hints===0 && T.blind>0) T.blind--;
+  if(mode!=='pre'){
+    const good = o.kind==='answer' && o.correct && o.conf>=2 && o.hints===0;
+    if(good){ T.streak = T.streak>0 ? T.streak+1 : 1; if(T.streak>=2 && T.lvl<3){ T.lvl++; T.streak=0; levelMsg='Level up in '+TOPICS[q.topic-1].name+'! Questions here will get harder.'; } }
+    else { T.streak = T.streak<0 ? T.streak-1 : -1; if(T.streak<=-2 && T.lvl>1){ T.lvl--; T.streak=0; levelMsg='Let\'s build this one up again. Questions will be a bit easier for now.'; } }
+  }
+  save();
+  return {levelMsg};
+}
+
+/* ---------- code + summary ---------- */
+function summaryText(){
+  const groups={needs:[],almost:[],ready:[],new:[]}; const blind=[];
+  TOPICS.forEach(t=>{ const T=S.topics[t.id]; groups[status(T).k].push(t.name); if(T.blind>0) blind.push(t.name); });
+  const L=['Kinematics Study Lab: progress summary'];
+  if(groups.needs.length) L.push('Needs practice: '+groups.needs.join('; '));
+  if(groups.almost.length) L.push('Almost there: '+groups.almost.join('; '));
+  if(groups.ready.length) L.push('Ready: '+groups.ready.join('; '));
+  if(groups.new.length) L.push('Not started: '+groups.new.join('; '));
+  if(blind.length) L.push('Blind spots (sure but wrong): '+blind.join('; '));
+  L.push('Progress code: '+encodeProgress(S));
+  return L.join('\n');
+}
+function copyText(txt,msg){
+  const done=()=>toast(msg||'Copied!');
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done,()=>fallbackCopy(txt,done)); } else fallbackCopy(txt,done);
+}
+function fallbackCopy(txt,done){
+  const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch(e){ toast('Copy did not work. Select the code and copy it by hand.'); }
+  document.body.removeChild(ta);
+}
+let toastTimer=null;
+function toast(m){ ui.toast=m; const el=document.getElementById('toast'); if(el){ el.textContent=m; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600); } }
+
+/* ---------- small view helpers ---------- */
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function lane(id, opts){
+  opts=opts||{}; const T=S.topics[id], st=status(T), pct=T.m==null?0:Math.round(T.m*100), t=TOPICS[id-1];
+  const checked = ui.sel.has(id) ? 'checked' : '';
+  const head = opts.check
+    ? `<label class="lane-name"><input type="checkbox" data-topic="${id}" ${checked}> <span>${t.name}</span></label>`
+    : `<div class="lane-name">${t.name}</div>`;
+  return `<div class="lane">${head}
+    <div class="track" role="img" aria-label="${t.name}: ${st.label}${T.m==null?'':', '+pct+' percent'}">
+      <div class="fill ${st.k}" style="width:${pct}%"></div><span class="runner" style="left:calc(${pct}% - ${pct>5?'0px':'0px'})">\uD83D\uDC3E</span><span class="flag">\uD83C\uDFC1</span>
+    </div>
+    <div class="lane-status"><span class="pill ${st.k}">${st.label}</span>${T.blind>0?'<span class="pill blind" title="You were sure about an answer that was wrong">Blind spot</span>':''}</div>
+  </div>`;
+}
+function kindFilter(){
+  const labs={a:'Find the acceleration',vf:'Find the final velocity',t:'Find the time'};
+  return `<div class="card kindfilter"><b>Acceleration math: which problems do you want?</b>
+    <div class="row">${Object.keys(labs).map(k=>`<label class="kchk"><input type="checkbox" data-kind="${k}" ${ui.kinds.has(k)?'checked':''}> ${labs[k]}</label>`).join('')}</div></div>`;
+}
+function codeBox(){
+  return `<div class="card codebox">
+    <h3>Your progress code</h3>
+    <p class="muted">Copy this code. Paste it on the home page on any device (or at the start of a new session) to get your study plan back.</p>
+    <div class="code" id="codeText">${encodeProgress(S)}</div>
+    <div class="row"><button class="btn" data-act="copycode">Copy code</button><button class="btn ghost" data-act="copysum">Copy summary (code + weak topics)</button></div>
+  </div>`;
+}
+function loadBox(){
+  return `<div class="card loadbox">
+    <h3>Have a progress code?</h3>
+    <div class="row grow"><input id="codein" type="text" autocomplete="off" spellcheck="false" placeholder="KIN-XXXXX-XXXXX-XXXXX-XXXXX" aria-label="Progress code"><button class="btn" data-act="loadcode">Load code</button></div>
+    <p class="msg" id="codemsg" role="status">${esc(ui.codeMsg)}</p>
+  </div>`;
+}
+
+/* ---------- screens ---------- */
+function homeScreen(){
+  const started = S.answered>0;
+  return `
+  <section class="hero">
+    <h1>Kinematics Study Lab</h1>
+    <p class="lede">Practice position, speed, velocity, graphs, and acceleration at your own pace. Every question has hints, a "Show me how" button, and a skip button.</p>
+  </section>
+  <div class="grid3">
+    <div class="card">
+      <h2>Take the pre-test</h2>
+      <p>Find out what you already know. You will get a study plan built from your answers.</p>
+      <div class="row"><button class="btn primary" data-act="pretest" data-n="2">Short<br><small>20 questions</small></button><button class="btn" data-act="pretest" data-n="3">Medium<br><small>30 questions</small></button></div>
+    </div>
+    <div class="card">
+      <h2>Choose my topics</h2>
+      <p>Pick exactly the parts of the unit you want to work on.</p>
+      <div class="row"><button class="btn" data-act="topics">Choose topics</button></div>
+    </div>
+    <div class="card">
+      <h2>Study the whole unit</h2>
+      <p>Mixed practice. The topics you find hardest show up more often.</p>
+      <div class="row"><button class="btn" data-act="mixed">Start mixed practice</button></div>
+    </div>
+  </div>
+  ${started?`<h2 class="sec">Your progress</h2><div class="card lanes">${TOPICS.map(t=>lane(t.id)).join('')}</div>
+  <div class="row center"><button class="btn primary" data-act="weakest">Practice my weakest topics</button><button class="btn ghost" data-act="progress">See my code</button></div>`:''}
+  ${loadBox()}`;
+}
+function topicsScreen(){
+  return `<h1 class="h1s">Choose your topics</h1>
+  <p class="lede">Check the topics you want to practice. The track shows how you are doing so far.</p>
+  <div class="card lanes">${TOPICS.map(t=>lane(t.id,{check:true})).join('')}</div>
+  ${ui.sel.has(8)?kindFilter():''}
+  <div class="row center"><button class="btn primary" data-act="startsel" ${ui.sel.size?'':'disabled'}>Start practice (${ui.sel.size} topic${ui.sel.size===1?'':'s'})</button>
+  <button class="btn ghost" data-act="selall">Select all</button><button class="btn ghost" data-act="selweak">Select my weakest 3</button><button class="btn ghost" data-act="home">Back</button></div>`;
+}
+function planScreen(){
+  const n=TOPICS.filter(t=>status(S.topics[t.id]).k==='ready').length;
+  return `<h1 class="h1s">Your study plan</h1>
+  <p class="lede">${n===10?'You are in great shape on every topic. A mixed review will keep it sharp.':'Topics that need the most work are already checked. Change the checks to build your own plan.'}</p>
+  <div class="card lanes">${TOPICS.slice().sort((a,b)=>(S.topics[a.id].m??-1)-(S.topics[b.id].m??-1)).map(t=>lane(t.id,{check:true})).join('')}</div>
+  ${ui.sel.has(8)?kindFilter():''}
+  <div class="row center"><button class="btn primary" data-act="startsel" ${ui.sel.size?'':'disabled'}>Start practice (${ui.sel.size} topic${ui.sel.size===1?'':'s'})</button><button class="btn" data-act="mixed">Study the whole unit</button></div>
+  ${codeBox()}${loadBox()}`;
+}
+function progressScreen(){
+  const blind=TOPICS.filter(t=>S.topics[t.id].blind>0).map(t=>t.name);
+  return `<h1 class="h1s">My progress</h1>
+  <div class="card lanes">${TOPICS.map(t=>lane(t.id)).join('')}</div>
+  ${blind.length?`<div class="card note"><b>Blind spots:</b> you felt sure about answers in <b>${blind.join(', ')}</b> that turned out wrong. Practice these first.</div>`:''}
+  <p class="muted center">${S.answered} questions answered so far.</p>
+  <div class="row center"><button class="btn primary" data-act="weakest">Practice my weakest topics</button><button class="btn" data-act="home">Home</button></div>
+  ${codeBox()}${loadBox()}`;
+}
+
+function qScreen(){
+  const s=ui.sess, c=s.cur, q=c.q, T=TOPICS[q.topic-1], pre=s.mode==='pre';
+  const lvl=['','Warm-up','Core','Challenge'][q.diff], dots='\u25CF'.repeat(q.diff)+'\u25CB'.repeat(3-q.diff);
+  const locked = c.stage!=='answering';
+  let counter;
+  if(pre) counter=`Question ${s.idx+1} of ${s.queue.length}`;
+  else counter=`${s.count} answered \u00B7 ${s.right} correct`;
+  const progress = pre ? `<div class="bar"><div style="width:${Math.round(s.idx/s.queue.length*100)}%"></div></div>` : '';
+
+  let answer='';
+  if(q.type==='mc'){
+    answer=`<div class="opts" role="radiogroup" aria-label="Answer choices">`+q.choices.map((ch,i)=>{
+      let cls='opt'; if(c.stage==='done'&&c.kind==='answer'){ if(i===q.correct) cls+=' right'; else if(i===c.picked) cls+=' wrong'; } else if(c.stage==='done'&&c.kind==='show'&&i===q.correct) cls+=' right';
+      return `<label class="${cls}${ch.svg?' hasimg':''}"><input type="radio" name="opt" value="${i}" ${c.picked===i?'checked':''} ${locked?'disabled':''}><span class="key">${'ABCD'[i]}</span><span class="optbody">${ch.t}${ch.svg||''}</span></label>`;
+    }).join('')+`</div>`;
+  } else {
+    answer=`<div class="numrow"><input id="num" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="${esc(c.value)}" placeholder="Answer" aria-label="Your answer" ${locked?'disabled':''}><span class="unit">${q.unit}</span></div>
+    <p class="note">${c.err?`<span class="err">${c.err}</span>`:'Answers are whole numbers or end in .5. Use a minus sign for negatives.'}</p>`;
+  }
+
+  const hintLabels=['Hint 1: a nudge','Hint 2: the setup','Hint 3: almost there'];
+  const hintsHtml = c.hints>0 ? `<div class="hints">${q.hints.slice(0,c.hints).map((h,i)=>`<div class="hint"><b>${hintLabels[i]}</b><br>${h}</div>`).join('')}</div>` : '';
+
+  let actions='', feedback='';
+  if(c.stage==='answering'){
+    actions=`<div class="row actions"><button class="btn primary" data-act="check" ${(q.type==='mc'?c.picked!=null:c.value.trim()!=='')?'':'disabled'}>Check answer</button>
+      ${!pre&&c.hints<3?`<button class="btn" data-act="hint">Hint (${c.hints}/3)</button>`:''}
+      <button class="btn" data-act="show">Show me how</button><button class="btn ghost" data-act="skip">Skip</button></div>`;
+  } else if(c.stage==='conf'){
+    actions=`<div class="conf" role="group" aria-label="How sure are you?"><p><b>How sure are you that your answer is right?</b><br><span class="muted">Be honest. This helps pick your next question.</span></p>
+      <div class="row"><button class="btn" data-act="conf" data-c="1">Just guessing</button><button class="btn" data-act="conf" data-c="2">Pretty sure</button><button class="btn" data-act="conf" data-c="3">Totally sure</button></div>
+      <button class="linkbtn" data-act="edit">Change my answer</button></div>`;
+  } else {
+    const steps=`<div class="steps"><b>How it is solved</b><ol>${q.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div>`;
+    const ansTxt = q.type==='num' ? `${fmt(q.answer)} ${q.unit}` : '';
+    if(c.kind==='show'){
+      feedback=`<div class="fb show" aria-live="polite"><p><b>Here is how it works.</b>${q.type==='num'?` The answer is <b>${ansTxt}</b>.`:''} Read it through, then try a similar one to see if it sticks.</p>${steps}</div>`;
+    } else if(c.correct){
+      const m = c.conf===1 ? 'Correct! You said you were guessing, so that is a good sign. Check the steps to make sure you know why.' : pick(['Correct! Nice work.','Yes, that is right!','Got it!','Right on.']);
+      feedback=`<div class="fb good" aria-live="polite"><p><b>${m}</b></p>${c.showSteps?steps:''}</div>`;
+    } else {
+      const extra = c.conf===3 ? ' You felt totally sure, so this one is a <b>blind spot</b>. Look at the steps closely.' : '';
+      feedback=`<div class="fb bad" aria-live="polite"><p><b>Not quite.</b>${q.type==='num'?` The answer is <b>${ansTxt}</b>.`:''}${extra}</p>${steps}</div>`;
+    }
+    if(c.levelMsg) feedback+=`<div class="levelmsg">${c.levelMsg}</div>`;
+    const last = pre && s.idx>=s.queue.length-1;
+    actions=`<div class="row actions"><button class="btn primary" data-act="next">${last?'See my results':'Next question'}</button>
+      ${(c.kind==='show'||!c.correct)?`<button class="btn" data-act="similar">Try a similar one</button>`:''}
+      ${(c.kind==='answer'&&c.correct&&!c.showSteps)?`<button class="btn ghost" data-act="steps">See how it is solved</button>`:''}</div>`;
+  }
+  const footer = pre ? `<p class="muted center">Pre-test: no hints here. You can still skip a question or tap "Show me how" any time.</p>` : `<div class="row center"><button class="btn ghost" data-act="finish">Finish session</button></div>`;
+  return `<div class="qhead"><span class="chip">${T.name}</span><span class="lvl" title="Difficulty">${dots} ${lvl}</span>${q.kind?`<span class="kindtag">${KIND_LABEL[q.kind]}</span>`:''}<span class="counter">${counter}</span></div>${progress}
+  <article class="card q"><div class="stem">${q.stem}</div>${q.svg?`<div class="gwrap">${q.svg}</div>`:''}${answer}${hintsHtml}${actions}${feedback}</article>${(!pre&&s.topics.includes(8))?kindFilter():''}${footer}`;
+}
+
+const screens = {home:homeScreen, topics:topicsScreen, plan:planScreen, progress:progressScreen, q:qScreen};
+
+/* ---------- sessions ---------- */
+function newCur(q){ return {q, hints:0, picked:null, value:'', stage:'answering', correct:null, conf:null, kind:null, showSteps:false, levelMsg:'', err:''}; }
+function startPretest(per){
+  const items=[]; TOPICS.forEach(t=>{ for(let k=1;k<=per;k++) items.push({topic:t.id,lvl:k}); });
+  const queue=[]; for(let l=1;l<=per;l++) queue.push(...shuffle(items.filter(i=>i.lvl===l)));
+  ui.sess={mode:'pre', queue, idx:0, count:0, right:0, used:{}, recent:[], results:{}};
+  loadPreQuestion(); ui.screen='q'; render(true);
+}
+function loadPreQuestion(){
+  const s=ui.sess, it=s.queue[s.idx]; const used=s.used[it.topic]=s.used[it.topic]||[];
+  const q=makeQuestion(it.topic,it.lvl,used); used.push(q.tid); s.cur=newCur(q);
+}
+function startPractice(topics){
+  ui.sess={mode:'practice', topics:topics.slice(), count:0, right:0, recent:[], lastTopic:null};
+  loadPracticeQuestion(); ui.screen='q'; render(true);
+}
+function loadPracticeQuestion(){
+  const s=ui.sess;
+  const ws=s.topics.map(id=>{ const T=S.topics[id]; let w=T.m==null?0.9:(1-T.m)+0.1; w+=0.35*T.blind; if(id===s.lastTopic&&s.topics.length>1) w*=0.35; return Math.max(w,0.05); });
+  let r=Math.random()*ws.reduce((a,b)=>a+b,0), id=s.topics[0];
+  for(let i=0;i<ws.length;i++){ r-=ws[i]; if(r<=0){ id=s.topics[i]; break; } }
+  const q=makeQuestion(id,S.topics[id].lvl,s.recent.slice(-3), id===8?[...ui.kinds]:null); s.recent.push(q.tid); s.lastTopic=id; s.cur=newCur(q);
+}
+function weakestTopics(n){
+  return TOPICS.slice().sort((a,b)=>{ const A=S.topics[a.id],B=S.topics[b.id]; return ((A.m??-0.5)-0.2*A.blind)-((B.m??-0.5)-0.2*B.blind); }).slice(0,n).map(t=>t.id);
+}
+function finishPretest(){
+  const s=ui.sess;
+  TOPICS.forEach(t=>{ const r=(s.results[t.id]||[]).filter(x=>x.ok).map(x=>x.diff); const T=S.topics[t.id];
+    T.lvl = r.length ? Math.min(3, Math.max(...r)+1) : 1; T.streak=0; });
+  S.pre=true; save();
+  const sorted=TOPICS.slice().sort((a,b)=>(S.topics[a.id].m??-1)-(S.topics[b.id].m??-1)).filter(t=>(S.topics[t.id].m??0)<0.8);
+  ui.sel=new Set((sorted.length?sorted.slice(0,4):TOPICS.slice(0,0)).map(t=>t.id));
+  ui.screen='plan'; ui.sess=null; render(true);
+}
+function isCorrectNow(){
+  const c=ui.sess.cur,q=c.q; if(q.type==='mc') return c.picked===q.correct;
+  return Math.abs(parseNum(c.value)-q.answer)<0.011;
+}
+function parseNum(s){
+  s=String(s).replace(/\u2212/g,'-').replace(/[\s,]/g,'').replace(/[a-zA-Z/\u00b2\u00B2]+$/,'');
+  if(!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return null; return parseFloat(s);
+}
+function finalize(kind,conf){
+  const s=ui.sess,c=s.cur,q=c.q; let correct=null;
+  if(kind==='answer') correct=isCorrectNow();
+  c.correct=correct; c.conf=conf||0; c.kind=kind; c.stage='done';
+  const res=record(q,{kind,correct,conf:conf||1,hints:c.hints},s.mode);
+  c.levelMsg=res.levelMsg; s.count++; if(correct) s.right++;
+  if(s.mode==='pre'){ (s.results[q.topic]=s.results[q.topic]||[]).push({diff:q.diff, ok: kind==='answer'&&correct&&conf>=2}); }
+}
+function nextQ(){
+  const s=ui.sess;
+  if(s.mode==='pre'){ s.idx++; if(s.idx>=s.queue.length){ finishPretest(); return; } loadPreQuestion(); }
+  else loadPracticeQuestion();
+  render(true);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return; const a=b.dataset.act, s=ui.sess, c=s&&s.cur;
+  switch(a){
+    case 'home': ui.screen='home'; ui.sess=null; render(true); break;
+    case 'progress': ui.screen='progress'; ui.sess=null; render(true); break;
+    case 'pretest': startPretest(+b.dataset.n); break;
+    case 'topics': ui.sel=new Set(); ui.screen='topics'; render(true); break;
+    case 'mixed': startPractice(TOPICS.map(t=>t.id)); break;
+    case 'weakest': startPractice(weakestTopics(3)); break;
+    case 'startsel': if(ui.sel.size) startPractice([...ui.sel]); break;
+    case 'selall': ui.sel=new Set(TOPICS.map(t=>t.id)); render(); break;
+    case 'selweak': ui.sel=new Set(weakestTopics(3)); render(); break;
+    case 'finish': ui.screen='progress'; ui.sess=null; render(true); break;
+    case 'check':
+      if(c.q.type==='num'){ const v=parseNum(c.value); if(v==null){ c.err='Enter just a number (the unit is already shown), like 12, \u22123, or 4.5.'; render(); break; } }
+      c.err=''; c.stage='conf'; render(); break;
+    case 'edit': c.stage='answering'; render(); break;
+    case 'conf': finalize('answer',+b.dataset.c); render(); break;
+    case 'hint': if(c.hints<3) c.hints++; render(); break;
+    case 'show': finalize('show',0); render(); break;
+    case 'skip': finalize('skip',0); nextQ(); break;
+    case 'steps': c.showSteps=true; render(); break;
+    case 'next': nextQ(); break;
+    case 'similar': s.cur=newCur(makeSimilar(c.q)); render(true); break;
+    case 'copycode': copyText(encodeProgress(S),'Code copied!'); break;
+    case 'copysum': copyText(summaryText(),'Summary copied!'); break;
+    case 'loadcode': {
+      const v=document.getElementById('codein').value, d=decodeProgress(v);
+      if(!d){ ui.codeMsg='That code did not work. Check for typos and try again.'; const m=document.getElementById('codemsg'); if(m) m.textContent=ui.codeMsg; break; }
+      S=d; save(); ui.codeMsg='';
+      const sorted=TOPICS.slice().sort((x,y)=>(S.topics[x.id].m??-1)-(S.topics[y.id].m??-1)).filter(t=>(S.topics[t.id].m??0)<0.8);
+      ui.sel=new Set(sorted.slice(0,4).map(t=>t.id)); ui.screen='plan'; ui.sess=null; render(true); toast('Progress loaded!'); break; }
+    case 'calc': ui.calcOpen=!ui.calcOpen; renderCalc(); break;
+  }
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.name==='opt'&&ui.sess){ ui.sess.cur.picked=+t.value; render(); const el=document.querySelector('[data-act="check"]'); if(el) el.focus(); }
+  if(t.dataset&&t.dataset.kind){
+    const k=t.dataset.kind; if(t.checked) ui.kinds.add(k); else if(ui.kinds.size>1) ui.kinds.delete(k); else toast('Keep at least one type checked.');
+    render(); return; }
+  if(t.dataset&&t.dataset.topic){ const id=+t.dataset.topic; if(t.checked) ui.sel.add(id); else ui.sel.delete(id); render(); }
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='num'&&ui.sess){ const c=ui.sess.cur; c.value=e.target.value; c.err=''; const btn=document.querySelector('[data-act="check"]'); if(btn) btn.disabled=c.value.trim()===''; }
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.id==='num'&&e.key==='Enter'&&ui.sess&&ui.sess.cur.stage==='answering'&&ui.sess.cur.value.trim()!==''){ e.preventDefault(); document.querySelector('[data-act="check"]').click(); }
+  if(e.target.id==='codein'&&e.key==='Enter'){ e.preventDefault(); document.querySelector('[data-act="loadcode"]').click(); }
+});
+
+/* ---------- render ---------- */
+function render(scrollTop){
+  const keepCode = document.getElementById('codein') ? document.getElementById('codein').value : '';
+  $app.innerHTML = screens[ui.screen]();
+  const ci=document.getElementById('codein'); if(ci&&keepCode) ci.value=keepCode;
+  if(scrollTop) window.scrollTo(0,0);
+  if(ui.screen==='q'){ const n=document.getElementById('num'); if(n&&!n.disabled) n.focus({preventScroll:true}); }
+}
+
+/* ---------- calculator ---------- */
+const calc={cur:'0',prev:null,op:null,fresh:true,expr:''};
+function calcFmt(n){ if(!isFinite(n)) return 'Error'; return String(+n.toFixed(8)); }
+function calcCompute(a,b,op){ return op==='+'?a+b : op==='\u2212'?a-b : op==='\u00d7'?a*b : (b===0?NaN:a/b); }
+function calcPress(k){
+  if(calc.cur==='Error'&&k!=='C'){ return; }
+  if(/^[0-9]$/.test(k)){ if(calc.fresh){ calc.cur=k; calc.fresh=false; } else if(calc.cur.replace(/[-.]/g,'').length<12) calc.cur = calc.cur==='0'?k:calc.cur+k; }
+  else if(k==='.'){ if(calc.fresh){ calc.cur='0.'; calc.fresh=false; } else if(!calc.cur.includes('.')) calc.cur+='.'; }
+  else if(['+','\u2212','\u00d7','\u00f7'].includes(k)){
+    if(calc.op&&!calc.fresh){ calc.cur=calcFmt(calcCompute(calc.prev,parseFloat(calc.cur),calc.op)); }
+    calc.prev=parseFloat(calc.cur); calc.op=k; calc.fresh=true; calc.expr=calc.cur+' '+k;
+  }
+  else if(k==='='){ if(calc.op!=null){ const r=calcCompute(calc.prev,parseFloat(calc.cur),calc.op); calc.expr=calc.cur===''?'':calc.prev+' '+calc.op+' '+calc.cur+' ='; calc.cur=calcFmt(r); calc.op=null; calc.prev=null; calc.fresh=true; } }
+  else if(k==='C'){ calc.cur='0'; calc.prev=null; calc.op=null; calc.fresh=true; calc.expr=''; }
+  else if(k==='\u232B'){ if(!calc.fresh&&calc.cur.length>1) calc.cur=calc.cur.slice(0,-1); else { calc.cur='0'; calc.fresh=true; } if(calc.cur==='-') calc.cur='0'; }
+  else if(k==='\u00b1'){ if(calc.cur!=='0'){ calc.cur=calc.cur.startsWith('-')?calc.cur.slice(1):'-'+calc.cur; } }
+  const d=document.getElementById('calcdisp'), x=document.getElementById('calcexpr');
+  if(d) d.textContent=calc.cur.replace('-','\u2212'); if(x) x.textContent=calc.expr.replace('-','\u2212');
+}
+function renderCalc(){
+  const el=document.getElementById('calc'); el.hidden=!ui.calcOpen; document.body.classList.toggle('calc-open',ui.calcOpen);
+  const tb=document.getElementById('calcbtn'); tb.setAttribute('aria-expanded',ui.calcOpen);
+  if(ui.calcOpen&&!el.dataset.built){
+    const keys=['C','\u00b1','\u232B','\u00f7','7','8','9','\u00d7','4','5','6','\u2212','1','2','3','+','0','.','='];
+    el.innerHTML=`<div class="calc-top"><b>Calculator</b><button class="calc-x" data-act="calc" aria-label="Close calculator">\u00d7</button></div><div class="calc-expr" id="calcexpr"></div><div class="calc-disp" id="calcdisp" aria-live="polite">0</div><div class="calc-keys">`+keys.map(k=>`<button class="ck ${/[\u00f7\u00d7\u2212+]/.test(k)?'op':''} ${k==='='?'eq':''} ${k==='0'?'zero':''}" data-k="${k}">${k}</button>`).join('')+`</div>`;
+    el.addEventListener('click',e=>{ const k=e.target.closest('[data-k]'); if(k) calcPress(k.dataset.k); });
+    el.dataset.built='1';
+  }
+}
+document.getElementById('calcbtn').addEventListener('click',()=>{ ui.calcOpen=!ui.calcOpen; renderCalc(); });
+document.getElementById('progbtn').addEventListener('click',()=>{ ui.screen='progress'; ui.sess=null; render(true); });
+document.getElementById('brand').addEventListener('click',()=>{ ui.screen='home'; ui.sess=null; render(true); });
+
+render();
+
+</script>
+</body>
+</html>
